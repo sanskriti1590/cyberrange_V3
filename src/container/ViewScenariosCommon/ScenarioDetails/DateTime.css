@@ -1,0 +1,31 @@
+.Background {
+  background-color: #16181f !important;
+}
+
+/* selected number of clock */
+.MuiClockNumber-root.Mui-selected {
+  color: #111218 !important;
+  background-color: #00ffff !important;
+}
+
+/* clock selected number in minutes */
+.MuiClockPointer-thumb {
+  border: 16px solid #00ffff;
+  background-color: #111218;
+}
+
+.MuiDateTimePickerToolbar-timeDigitsContainer {
+  align-items: center;
+}
+
+/* selected Item */
+.Mui-selected {
+  color: #00ffff !important;
+  border-bottom-color: #00ffff;
+}
+
+.MuiButtonBase-root-MuiIconButton-root-MuiPickersCalendarHeader-switchViewButton {
+  color: #00ffff !important ;
+}
+
+/*  */

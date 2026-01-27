@@ -1,0 +1,105 @@
+.navlink-wrapper a {
+    font-size: 16px !important;
+    color: #ffff;
+    text-decoration: none;
+}
+
+.inactive {
+    padding: 12px 16px 12px 20px;
+    color: #6F727A !important;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.active {
+    padding: 12px 16px 12px 20px;
+    color: #00FFFF !important;
+    width: 100%;
+    background-color: #002929;
+    transition: all 0.3s ease;
+}
+
+.active::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background-color: #002929 !important;
+    bottom: 0;
+    left: 0;
+
+}
+
+.css-1brzlce-MuiPaper-root-MuiMenu-paper-MuiPopover-paper:before {
+    background-color: #262626;
+}
+
+.css-1brzlce-MuiPaper-root-MuiMenu-paper-MuiPopover-paper {
+    background-color: #262626;
+}
+
+.css-14dp2jb-MuiPaper-root-MuiMenu-paper-MuiPopover-paper {
+    background-color: #262626;
+}
+
+.css-ejb1yx-MuiList-root-MuiMenu-list {
+    background-color: #262626;
+}
+
+.css-iashlb-MuiPaper-root-MuiMenu-paper-MuiPopover-paper:before {
+    background-color: #262626;
+}
+
+/* .css-aw0r0a-MuiPaper-root-MuiMenu-paper-MuiPopover-paper {
+
+    background-color:#262626;
+}
+.css-aw0r0a-MuiPaper-root-MuiMenu-paper-MuiPopover-paper:before {
+
+    background-color: #262626;
+} */
+
+.css-evybia-MuiPaper-root-MuiDrawer-paper {
+    background-color: #262626;
+}
+
+.VIpgJd-ZVi9od-l4eHX-hSRGPd,
+.VIpgJd-ZVi9od-l4eHX-hSRGPd:link,
+.VIpgJd-ZVi9od-l4eHX-hSRGPd:visited,
+.VIpgJd-ZVi9od-l4eHX-hSRGPd:hover,
+.VIpgJd-ZVi9od-l4eHX-hSRGPd:active {
+    display: none;
+}
+
+.goog-te-gadget {
+    font-size: 0px !important;
+}
+
+.goog-te-gadge .goog-te-combo {
+    border-radius: 3px;
+    border: none;
+}
+
+.css-ejb1yx-MuiList-root-MuiMenu-list {
+    margin-bottom: 24%;
+}
+
+.css-iashlb-MuiPaper-root-MuiMenu-paper-MuiPopover-paper {
+    background-color: #262626;
+}
+
+.example::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.example {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.Mui-disabled{
+    background-color:"white";
+    color:"#acacac";
+}

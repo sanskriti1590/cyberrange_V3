@@ -1,0 +1,60 @@
+label[data-shrink=false]+.MuiInputBase-formControl .css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input {
+  border: 1px solid white !important;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.3);
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+}
+
+::-webkit-scrollbar-thumb:window-inactive {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.css-z1o969-MuiInputBase-root-MuiOutlinedInput-root {
+  border: 1px solid white;
+  border-radius: 4px !important;
+}
+
+.css-jedpe8-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input.MuiSelect-select {
+  border: 1px solid white;
+  border-radius: 4px !important;
+}
+
+.css-1jy569b-MuiFormLabel-root-MuiInputLabel-root {
+  display: 'none' !important
+}
+
+.css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input {
+  border: 1px solid white !important;
+  border-radius: 4px !important;
+}
+
+.css-1c99szj-MuiRating-icon {
+  color: gray !important;
+}
+
+.carousel-status {
+  display: none;
+}
+
+/* .MuiTypography-root {
+    color:#ffff ;
+} */
+
+.css-13u8hfs-MuiPaper-root-MuiAccordion-root.Mui-expanded:first-of-type {
+  margin-top: 12px;
+}

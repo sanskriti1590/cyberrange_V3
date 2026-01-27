@@ -1,0 +1,336 @@
+/*  print styles */
+
+@media print {
+  @page {
+    margin: 0.5in;
+    size: A4;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: white !important;
+  }
+
+  /* Hide unnecessary elements */
+  .MuiBackdrop-root,
+  .MuiSelect-root,
+  .MuiFormControl-root,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure proper container sizing */
+  .MuiStack-root {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Force white background and black text for print */
+  .MuiPaper-root,
+  .MuiBox-root {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Ensure text colors are readable in print */
+  .scenario-name-textHeading {
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 4px !important;
+    font-size: 20px !important;
+    font-weight: 600;
+    line-height: 30px;
+  }
+
+  .heading,
+  .textHeading,
+  .question,
+  .answer,
+  .icon,
+  .desc {
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 4px !important;
+    font-size: 14px !important;
+  }
+
+  .description-content {
+    margin-top: 16px !important;
+  }
+
+  .header {
+    padding: 8px !important;
+  }
+
+  .name,
+  .email {
+    color: #ece8e8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .details {
+    margin-top: 16px !important;
+  }
+
+
+
+  .lineChartContainer {
+    margin-top: -10px !important;
+    margin-bottom: -15px !important;
+  }
+
+  .recharts-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .recharts-legend-wrapper {
+    padding-top: 2px !important;
+    margin-top: -5px !important;
+  }
+
+  /* Force dark backgrounds to print as dark */
+  [style*="background-color: #1c1f28"],
+  [style*="background: #1c1f28"] {
+    background-color: #1c1f28 !important;
+    color: #FFFFFF !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ensure borders are visible */
+  .line,
+  [style*="border"],
+  [class*="border"] {
+    border-color: #000000 !important;
+  }
+
+  /* Chart styling for print */
+  .recharts-cartesian-axis-line,
+  .recharts-cartesian-axis-tick-line {
+    stroke: #000000 !important;
+  }
+
+  .recharts-cartesian-axis-tick-value {
+    fill: #000000 !important;
+  }
+
+  .recharts-bar-rectangle {
+    fill: #41D5CB !important;
+  }
+
+
+  .box {
+    border: 1px solid #000000 !important;
+    padding: 8px !important;
+    margin: 0 4px !important;
+  }
+
+  /* Prevent page breaks inside important sections */
+  .MuiStack-root {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure images print properly */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.name {
+  font-family: Bai Jamjuree;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+  text-align: left;
+}
+
+.email {
+  font-family: Public Sans;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.45px;
+  text-align: left;
+}
+
+
+
+.heading {
+  font-family: Bai Jamjuree;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 30px;
+  text-align: left;
+  color: #161c24;
+}
+
+.line {
+  border: 1px solid rgba(188, 190, 193, 1);
+}
+
+.textHeading {
+  font-family: Bai Jamjuree;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 30px;
+  text-align: left;
+  color: #161c24;
+}
+
+.icon {
+  font-family: Manrope;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
+}
+
+.desc {
+  font-family: Public Sans;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  text-align: left;
+}
+
+.box {
+  max-width: 95%;
+  height: auto;
+
+  gap: 0px;
+  border-radius: 8px;
+  border: 1px;
+  opacity: 0px;
+  border: 1px solid #111111;
+  padding: 4px;
+  margin: auto;
+}
+
+
+
+
+.question {
+  font-family: Manrope;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 16.39px;
+  text-align: left;
+  color: #16181f;
+  text-transform: capitalize;
+}
+
+.answer {
+  font-family: Public Sans;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18.1px;
+  text-align: left;
+}
+
+.description-content {
+  margin: 16px 0;
+}
+
+.scenario-name-textHeading {
+  color: #000000;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  padding: 4px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 30px;
+}
+
+
+
+/* Force pie charts to be visible in production */
+.recharts-pie path {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.recharts-pie-sector {
+  stroke: none !important;
+}
+
+.recharts-surface {
+  overflow: visible !important;
+}
+
+/* Ensure print styles work for pie charts */
+@media print {
+  .recharts-pie path {
+    opacity: 1 !important;
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .recharts-pie-sector {
+    fill-opacity: 1 !important;
+  }
+
+  .recharts-legend-wrapper {
+    visibility: visible !important;
+  }
+}
+
+
+/* Logo specific styles */
+.logo {
+  background-color: transparent !important;
+  mix-blend-mode: normal !important;
+}
+
+@media print {
+  .logo {
+    background-color: transparent !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    mix-blend-mode: normal !important;
+    filter: none !important;
+    margin: 16px !important;
+  }
+
+  /* Force the header to maintain its dark background */
+  .header {
+    background-color: #1c1f28 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .team {
+    background-color: #2b343b !important;
+    color: #60dbd3 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+.team {
+
+  background-color: #2b343b !important;
+  color: #60dbd3 !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+
+/* Custom Pie Chart print styles */
+@media print {
+  .custom-pie-chart svg {
+    margin: 0 auto !important;
+  }
+
+  .custom-pie-chart path {
+    stroke-width: 0.5px !important;
+  }
+}

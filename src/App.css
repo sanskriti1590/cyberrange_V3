@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Bai+Jamjuree&family=Manrope&display=swap');
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+
+
+
+/* } */
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ql-container {
+  height: 84% !important
+}
+
+
+/* ==== GLOBAL MUI SELECT DARK THEME FIX ==== */
+
+/* Label color */
+.MuiInputLabel-root {
+  color: #aaa !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: #90caf9 !important;
+}
+
+/* Select text + border color */
+.MuiSelect-select {
+  color: #fff !important;
+  background-color: transparent !important;
+}
+
+/* Outlined border styling */
+.MuiOutlinedInput-notchedOutline {
+  border-color: #555 !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #888 !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #90caf9 !important;
+}
+
+/* Dropdown icon color */
+.MuiSelect-icon {
+  color: #90caf9 !important;
+}
+
+/* Menu (dropdown) background and text */
+.MuiPaper-root.MuiMenu-paper {
+  background-color: #0f2b2b !important;
+  color: #fff !important;
+}
+
+/* Highlight selected/hovered items */
+.MuiMenuItem-root.Mui-selected {
+  background-color: #004d40 !important;
+}
+
+.MuiMenuItem-root:hover {
+  background-color: #00695c !important;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #a9abaf;
+  border-radius: 10px;
+}
+
+.hover:hover {
+  cursor: pointer;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #747576;
+}
+
+
+ul.MuiList-root.MuiList-padding.MuiMenu-list.css-r8u8y9 {
+  background-color: #656565 !important;
+}
+
+
+/* fonts.css */
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('/src/assests/fonts/Manrope/Manrope-VariableFont_wght.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+
+
+a:hover {
+  color: red;
+}

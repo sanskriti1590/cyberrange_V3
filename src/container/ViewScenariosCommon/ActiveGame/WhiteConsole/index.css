@@ -1,0 +1,18 @@
+.Mui-completed{
+    color:#039855 !important;
+}
+
+
+.Mui-active{
+ 
+    color:#9C9EA3 !important;
+}
+
+.Mui-disabled{
+    color:orange
+}
+
+.remove-arrows {
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield; /* Remove increment and decrement arrows in Chrome, Safari, and Edge */
+  }

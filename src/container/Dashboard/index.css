@@ -1,0 +1,30 @@
+.sceneriocard {
+    color: #b46228 !important;
+}
+
+.points{
+    color:gray !important
+}
+
+/* .css-i4bv87-MuiSvgIcon-root {
+    color: #acacac !important;
+  } */
+  img:hover {
+    cursor: pointer;
+}
+
+.example::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .example {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .hovered {
+    width: 150px;
+    height: 150px;
+    /* Add any other styles you want to apply when hovered */
+  }

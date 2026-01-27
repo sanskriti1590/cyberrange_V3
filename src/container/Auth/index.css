@@ -1,0 +1,37 @@
+/* .css-ys544p-MuiStack-root {
+  overflow: scroll;
+  height: 100vh;
+} */
+.css-18bv3t0-MuiStack-root {
+  overflow: scroll;
+  height: 100vh;
+  
+}
+.css-i4t42p-MuiInputBase-root-MuiOutlinedInput-root {
+  border-radius: 8px;
+}
+
+input:-internal-autofill-selected {
+  appearance: menulist-button;
+  background-image: none !important;
+  background-color: none !important;
+  color: fieldtext !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #161616 inset !important;
+}
+
+input:-webkit-autofill{
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: #ffffff;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px #ACACAC;
+}
+
+ul.MuiList-root.MuiList-padding.MuiMenu-list.css-r8u8y9 {
+  background-color: black;
+}

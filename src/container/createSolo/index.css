@@ -1,0 +1,12 @@
+.css-6hp17o-MuiList-root-MuiMenu-list{
+    background-color: #12464C;
+}
+
+.sticky-element {
+    position: sticky;
+    top: 0; /* Stick to the top of the nearest ancestor with a scrolling mechanism */
+   
+    padding: 10px;
+    text-align: center;
+  }
+  

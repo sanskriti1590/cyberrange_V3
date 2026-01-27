@@ -1,0 +1,57 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "name": "Andy",
+      "value": "N"
+    },
+    {
+      "id": 2,
+      "name": "Betty",
+      "value": "R"
+    },
+    {
+      "id": 3,
+      "name": "Cate",
+      "value": "M"
+    },
+    {
+      "id": 4,
+      "name": "Dave",
+      "value": "N"
+    },
+    {
+      "id": 5,
+      "name": "Ellen",
+      "value": "R"
+    },
+    {
+      "id": 6,
+      "name": "Fiona",
+      "value": "M"
+    },
+    {
+      "id": 7,
+      "name": "Garry",
+      "value": "M"
+    },
+    {
+      "id": 8,
+      "name": "Holly",
+      "value": "M"
+    },
+    {
+      "id": 9,
+      "name": "Iris",
+      "value": "R"
+    },
+    {
+      "id": 10,
+      "name": "Jane",
+      "value": "N"
+    }
+  ],
+  "links": [
+    
+  ]
+}

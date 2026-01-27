@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Bai+Jamjuree&family=Manrope&display=swap');
+
+* {
+    font-family: 'Bai Jamjuree' !important;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+
+    /* color: #ffffff; */
+}
+
+
+body {
+    margin: 0;
+    font-family: 'Bai Jamjuree', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.otpVerifitcation {
+    color: #acacac !important;
+}
+
+
+input:-internal-autofill-selected {
+    appearance: menulist-button;
+    background-image: none !important;
+    background-color: none !important;
+    color: fieldtext !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: #ffffff;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px #16181F;
+}
+
+
+input:-internal-autofill-selected {
+    appearance: menulist-button;
+    background-image: none !important;
+    background-color: none !important;
+    color: fieldtext !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: #ffffff;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px #16181F;
+}
+
+*:focus {
+    outline: none;
+}
