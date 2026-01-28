@@ -315,12 +315,26 @@ const joinHandle = async () => {
   const files = data?.files_data?.[selectedTeam] || [];
 
   //team flags count for team distribution
-const teamFlagCount = {
-  red: data?.flag_data?.red_team?.length || 0,
-  blue: data?.flag_data?.blue_team?.length || 0,
-  yellow: data?.flag_data?.yellow_team?.length || 0,
-  purple: data?.flag_data?.purple_team?.length || 0,
-};
+const isMilestone =
+  String(data?.type || "").toUpperCase() === "MILESTONE";
+
+const teamItemCount = React.useMemo(() => {
+  if (!isMilestone) {
+    return {
+      red: data?.flag_data?.red_team?.length || 0,
+      blue: data?.flag_data?.blue_team?.length || 0,
+      yellow: data?.flag_data?.yellow_team?.length || 0,
+      purple: data?.flag_data?.purple_team?.length || 0,
+    };
+  }
+
+  return {
+    red: data?.milestone_data?.red_team?.length || 0,
+    blue: data?.milestone_data?.blue_team?.length || 0,
+    yellow: data?.milestone_data?.yellow_team?.length || 0,
+    purple: data?.milestone_data?.purple_team?.length || 0,
+  };
+}, [data, isMilestone]);
 
 const availableRoles = Array.from(
   new Set((infra?.instances || []).map((i) => (i.team || "").toUpperCase()))
@@ -1313,16 +1327,18 @@ const addTeam = () => {
 
         {/* Metrics */}
         <Stack direction="row" gap={1.5}>
-          <Chip
-            icon={<FlagIcon />}
-            label={`${teamFlagCount?.[team.key] ?? 0} Flags`}
-            sx={{
-              backgroundColor: "#020617",
-              border: `1px solid ${team.color}55`,
-              color: team.color,
-              fontWeight: 500,
-            }}
-          />
+        <Chip
+          icon={isMilestone ? <TimelineIcon /> : <FlagIcon />}
+          label={`${teamItemCount?.[team.key] ?? 0} ${
+            isMilestone ? "Milestones" : "Flags"
+          }`}
+          sx={{
+            backgroundColor: "#020617",
+            border: `1px solid ${team.color}55`,
+            color: team.color,
+            fontWeight: 500,
+          }}
+        />
         </Stack>
       </Box>
     ))}

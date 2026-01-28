@@ -1,3 +1,5 @@
+//Machien switicing on participant conole in case multiple machine are assigned
+
 import { MenuItem, Select } from "@mui/material";
 import { switchMachineVersion2 } from "../../../APIConfig/version2Scenario";
 

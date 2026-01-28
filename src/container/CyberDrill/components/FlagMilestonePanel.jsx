@@ -1,287 +1,386 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Box,
-  Button,
-  Chip,
-  Divider,
   Stack,
-  TextField,
-  Tooltip,
   Typography,
+  Button,
+  Select,
+  MenuItem,
+  Checkbox,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import LockIcon from "@mui/icons-material/Lock";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import SendIcon from "@mui/icons-material/Send";
-import { toast } from "react-toastify";
 
-import fuse_bulb from "../../../assests/fuse bulb.svg";
-import hove_bulb from "../../../assests/State=Hover.svg";
-import { flagSubmitApi, milestoneHintVersion2 } from "../../../APIConfig/version2Scenario";
+import Teams from "./Teams";
+import ScenarioWalkthrough from "./scenarioWalkthrough";
+import { all } from "axios";
 
-/* ================= CONSTANTS ================= */
+/* ================= TEAM CONFIG ================= */
 
-const TEAL = "rgba(20,184,166,0.95)";
-const TEAL_TEXT = "#041b1a";
+const TEAMS = [
+  { key: "BLUE", title: "Blue Team Flags", color: "#7A5AF8" },
+  { key: "RED", title: "Red Team Flags", color: "#CC2E28" },
+  { key: "PURPLE", title: "Purple Team Flags", color: "#9747FF" },
+  { key: "YELLOW", title: "Yellow Team Flags", color: "#F79D28" },
+];
 
-/* ================= HELPERS ================= */
+/* ================= DEFAULT FLAG ================= */
 
-const fmt = (ts) => {
-  if (!ts) return "";
-  return new Date(ts).toLocaleString();
-};
+const createEmptyItem = () => ({
+  id: crypto.randomUUID(),
+  phase_id: "",
+  name: "",
+  answer: "",
+  hint: "",
+  points: 100,
+  hint_penalty: 0,
+  placeholder: "",
+  show_placeholder: true,
+  is_locked: false,
+});
 
-/* ================= COMPONENT ================= */
+/* ================= MAIN ================= */
 
-export default function PhaseFlag({
-  activeScenarioId,
-  itemsByPhase = {},
-  killChainProgress = [],
-  refresh,
+export default function FlagMilestonePanel({
+  draft,
+  setDraft,
+  onBack,
+  onNext,
 }) {
-  const phaseOrder = useMemo(
-    () => (Array.isArray(killChainProgress) ? killChainProgress.map(p => p.phase_id) : []),
-    [killChainProgress]
-  );
+  
+  const phases = React.useMemo(() => {
+  if (!Array.isArray(draft.phases)) return [];
+  return draft.phases.map((p, idx) => ({
+    id: p.local_id ?? p.id ?? `phase-${idx}`,
+    name: p.phase_name ?? p.name ?? "",
+  }));
+}, [draft.phases]);
 
-  const phases = useMemo(() => {
-    const ids = phaseOrder.length ? phaseOrder : Object.keys(itemsByPhase);
-    return ids.map(id => ({ phase_id: id, ...(itemsByPhase[id] || {}) }));
-  }, [itemsByPhase, phaseOrder]);
 
-  const [expanded, setExpanded] = useState(phases?.[0]?.phase_id || false);
-  const [answers, setAnswers] = useState({});
-  const [hintOpen, setHintOpen] = useState({});
-  const [loading, setLoading] = useState({});
-  const [localOverrides, setLocalOverrides] = useState({}); // 🔥 instant UI updates
+  const mode = draft.mode || "FLAG";
 
-  /* ================= SUBMIT ================= */
+  const [activeTeam, setActiveTeam] = useState("BLUE");
 
-  const handleSubmit = async (flag) => {
-    const fid = flag.flag_id;
-    const val = (answers[fid] || "").trim();
-    if (!val) return toast.error("Enter flag value first");
+  const [teamData, setTeamData] = useState(() => {
+    const base = {};
+    TEAMS.forEach((t) => {
+      base[t.key] = {
+        walkthrough: [],
+        items: [createEmptyItem()],
+      };
+    });
+    return base;
+  });
 
-    setLoading(p => ({ ...p, [fid]: true }));
+  /* ========== HELPERS ========== */
 
-    try {
-      const fd = new FormData();
-      fd.append("active_scenario_id", activeScenarioId);
-      fd.append("flag_id", fid);
-      fd.append("submitted_answer", val);
-
-      const res = await flagSubmitApi(fd);
-      const data = await flagSubmitApi(fd);
-
-      if (data?.is_correct) {
-        toast.success("Correct Answer");
-
-        // 🔥 instant UI mark as submitted
-        setLocalOverrides(p => ({
-          ...p,
-          [fid]: {
-            is_correct: true,
-            obtained_score: data.awarded_score,
-            submitted_at: new Date().toISOString(),
-          },
-        }));
-      } else {
-        toast.error("Wrong Answer");
-      }
-
-      refresh?.();
-    } catch {
-      toast.error("Submit failed");
-    } finally {
-      setLoading(p => ({ ...p, [fid]: false }));
-    }
+  const updateItem = (index, field, value) => {
+    setTeamData((prev) => ({
+      ...prev,
+      [activeTeam]: {
+        ...prev[activeTeam],
+        items: prev[activeTeam].items.map((it, i) =>
+          i === index ? { ...it, [field]: value } : it
+        ),
+      },
+    }));
   };
 
-  /* ================= HINT ================= */
-
-  const handleHint = async (flag) => {
-    const fid = flag.flag_id;
-
-    if (flag.locked || flag.locked_by_admin) {
-      toast.error("This question is locked");
-      return;
-    }
-
-    // toggle if already shown
-    if (flag.hint_used && flag.hint_string) {
-      setHintOpen(p => ({ ...p, [fid]: !p[fid] }));
-      return;
-    }
-
-    try {
-      const res = await milestoneHintVersion2(activeScenarioId, fid, "FLAG");
-      const penalty = flag.hint_penalty ?? 0;
-
-      toast.warning(`Hint revealed. Penalty applied: -${penalty} pts`);
-      setHintOpen(p => ({ ...p, [fid]: true }));
-
-      refresh?.();
-    } catch {
-      toast.error("Failed to fetch hint");
-    }
+  const addItem = () => {
+    setTeamData((prev) => ({
+      ...prev,
+      [activeTeam]: {
+        ...prev[activeTeam],
+        items: [createEmptyItem(), ...prev[activeTeam].items],
+      },
+    }));
   };
 
-  /* ================= RENDER ================= */
+  const deleteItem = (index) => {
+    setTeamData((prev) => ({
+      ...prev,
+      [activeTeam]: {
+        ...prev[activeTeam],
+        items:
+          prev[activeTeam].items.length === 1
+            ? [createEmptyItem()]
+            : prev[activeTeam].items.filter((_, i) => i !== index),
+      },
+    }));
+  };
+
+  /* ========== NEXT ========== */
+
+  const handleNext = () => {
+    const allItems = [];
+
+    Object.entries(teamData).forEach(([team, data]) => {
+      data.items.forEach((it) => {
+        if (!it.name) return;
+
+        allItems.push({
+          ...it,
+          team,
+        });
+      });
+    });
+    setDraft((prev) => ({
+      ...prev,
+      items: allItems,
+    }));
+
+    onNext(allItems);
+  };
+
+  /* ================= UI ================= */
 
   return (
-    <Stack spacing={1.5}>
-      <Typography fontSize={13} fontWeight={700}>
-        Flag Submission
-      </Typography>
+    <Stack spacing={3}>
+      {/* HEADER */}
+<Stack
+  direction="row"
+  alignItems="center"
+  justifyContent="space-between"
+  sx={{ mb: 2 }}
+>
+  {/* LEFT: BACK */}
+  <Button onClick={onBack}>
+    Back
+  </Button>
 
-      {phases.map((phase) => {
-        const items = phase.items || [];
-        const completed = items.filter(i => i.is_correct).length;
-        const total = items.length;
-        const phaseDone = total > 0 && completed === total;
 
-        return (
-          <Accordion
-            key={phase.phase_id}
-            expanded={expanded === phase.phase_id}
-            onChange={() =>
-              setExpanded(expanded === phase.phase_id ? false : phase.phase_id)
-            }
-            sx={{
-              border: `1px solid ${phaseDone ? TEAL : "#1e293b"}`,
-              borderRadius: 3,
-              background: "rgba(2,6,23,0.85)",
-            }}
-          >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Stack direction="row" width="100%" alignItems="center">
-                <Typography fontWeight={700}>{phase.phase_name}</Typography>
-                <Box flex={1} />
-                <Chip
-                  label={`${completed}/${total}`}
+  {/* RIGHT: NEXT */}
+  <Button
+    variant="contained"
+    onClick={handleNext}
+  >
+    Next
+  </Button>
+</Stack>
+
+      {/* CARD */}
+      <Stack alignItems="center">
+        <Stack
+          sx={{
+            width: "780px",
+            backgroundColor: "#16181F",
+            borderRadius: "16px",
+            p: 2,
+          }}
+        >
+          <Box display="flex" gap={2}>
+            {/* TEAMS */}
+            <Teams
+              team={TEAMS.map((t) => ({
+                title: t.title,
+                color: t.color,
+                active: activeTeam === t.key,
+                questionInformation: teamData[t.key].items,
+              }))}
+              cta={(color) =>
+                setActiveTeam(
+                  TEAMS.find((t) => t.color === color)?.key
+                )
+              }
+            />
+
+            {/* CONTENT */}
+            <Stack width="100%" gap={2}>
+              <ScenarioWalkthrough
+                walkthrough={teamData[activeTeam].walkthrough}
+                onFileUpload={(files) =>
+                  setTeamData((prev) => ({
+                    ...prev,
+                    [activeTeam]: {
+                      ...prev[activeTeam],
+                      walkthrough: [
+                        ...prev[activeTeam].walkthrough,
+                        ...files,
+                      ],
+                    },
+                  }))
+                }
+                deleteFileHandler={(idx) =>
+                  setTeamData((prev) => ({
+                    ...prev,
+                    [activeTeam]: {
+                      ...prev[activeTeam],
+                      walkthrough: prev[activeTeam].walkthrough.filter(
+                        (_, i) => i !== idx
+                      ),
+                    },
+                  }))
+                }
+              />
+
+              <Button onClick={addItem} sx={{ width: "fit-content" }}>
+                + Add More {mode}
+              </Button>
+
+              {teamData[activeTeam].items.map((item, index) => (
+                <Stack
+                  key={item.id}
+                  gap={1.5}
                   sx={{
-                    bgcolor: phaseDone ? TEAL : "transparent",
-                    color: phaseDone ? TEAL_TEXT : "#e5e7eb",
-                    fontWeight: 800,
+                    backgroundColor: "#0F1117",
+                    borderRadius: "12px",
+                    p: 2,
                   }}
-                />
-              </Stack>
-            </AccordionSummary>
+                >
+                  {/* PHASE */}
+                  <Select
+                    value={item.phase_id}
+                    onChange={(e) =>
+                      updateItem(index, "phase_id", e.target.value)
+                    }
+                    displayEmpty
+                  >
+                    <MenuItem disabled value="">
+                      Select Phase
+                    </MenuItem>
+                    {phases.map((p) => (
+                      <MenuItem key={p.id} value={p.id}>
+                        {p.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
 
-            <AccordionDetails>
-              <Stack spacing={1.2}>
-                {items.map((flag) => {
-                  const fid = flag.flag_id;
-                  const override = localOverrides[fid] || {};
-                  const isCorrect = override.is_correct ?? flag.is_correct;
-                  const score = override.obtained_score ?? flag.obtained_score;
-                  const submittedAt = override.submitted_at ?? flag.submitted_at;
-                  const locked = flag.locked || flag.locked_by_admin;
+                  <input
+                    placeholder="Flag / Milestone Name"
+                    value={item.name}
+                    onChange={(e) =>
+                      updateItem(index, "name", e.target.value)
+                    }
+                    style={inputStyle}
+                  />
 
-                  return (
-                    <Box
-                      key={fid}
-                      sx={{
-                        p: 1.5,
-                        borderRadius: 2,
-                        border: `1px solid ${isCorrect ? TEAL : "#1e293b"}`,
-                        background: "rgba(15,23,42,0.6)",
-                      }}
+                  {mode === "FLAG" && (
+                    <input
+                      placeholder="Flag Answer"
+                      value={item.answer}
+                      onChange={(e) =>
+                        updateItem(index, "answer", e.target.value)
+                      }
+                      style={inputStyle}
+                    />
+                  )}
+
+                  <input
+                    placeholder="Hint (optional)"
+                    value={item.hint}
+                    onChange={(e) =>
+                      updateItem(index, "hint", e.target.value)
+                    }
+                    style={inputStyle}
+                  />
+
+                  <input
+                    placeholder="Placeholder (flag{xxxx})"
+                    value={item.placeholder}
+                    onChange={(e) =>
+                      updateItem(index, "placeholder", e.target.value)
+                    }
+                    style={inputStyle}
+                  />
+
+                <Stack direction="row" gap={3}>
+                  {/* POINTS */}
+                  <Stack gap={0.5}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#9C9EA3", fontSize: "12px" }}
                     >
-                      {/* HEADER */}
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography fontWeight={700}>
-                          {flag.question}
-                        </Typography>
+                      Points
+                    </Typography>
+                    <input
+                      type="number"
+                      value={item.points}
+                      onChange={(e) =>
+                        updateItem(index, "points", Number(e.target.value))
+                      }
+                      style={smallInput}
+                    />
+                  </Stack>
 
-                        <Box flex={1} />
+                  {/* HINT PENALTY */}
+                  <Stack gap={0.5}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#9C9EA3", fontSize: "12px" }}
+                    >
+                      Hint Penalty
+                    </Typography>
+                    <input
+                      type="number"
+                      value={item.hint_penalty}
+                      onChange={(e) =>
+                        updateItem(index, "hint_penalty", Number(e.target.value))
+                      }
+                      style={smallInput}
+                    />
+                  </Stack>
+                </Stack>
 
-                        {isCorrect && (
-                          <Chip
-                            icon={<CheckCircleIcon />}
-                            label="Submitted"
-                            sx={{
-                              bgcolor: TEAL,
-                              color: TEAL_TEXT,
-                              fontWeight: 900,
-                            }}
-                          />
-                        )}
+                  <Stack direction="row" gap={3}>
+                    <label>
+                      <Checkbox
+                        checked={item.show_placeholder}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            "show_placeholder",
+                            e.target.checked
+                          )
+                        }
+                      />
+                      Show Placeholder
+                    </label>
 
-                        <Chip label={`${flag.score} pts`} />
+                    <label>
+                      <Checkbox
+                        checked={item.is_locked}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            "is_locked",
+                            e.target.checked
+                          )
+                        }
+                      />
+                      Locked
+                    </label>
+                  </Stack>
 
-                        <Tooltip title="Use Hint">
-                          <Box
-                            component="span"
-                            onClick={() => handleHint(flag)}
-                            sx={{ cursor: locked ? "not-allowed" : "pointer" }}
-                          >
-                            <img
-                              src={flag.hint_used ? fuse_bulb : hove_bulb}
-                              alt=""
-                              style={{ width: 26, opacity: locked ? 0.4 : 1 }}
-                            />
-                          </Box>
-                        </Tooltip>
-
-                        {locked && <LockIcon sx={{ color: "#94a3b8" }} />}
-                      </Stack>
-
-                      {/* INPUT */}
-                      {!locked && !isCorrect && (
-                        <Stack direction="row" spacing={1} mt={1}>
-                          <TextField
-                            fullWidth
-                            size="small"
-                            placeholder="Enter flag value..."
-                            value={answers[fid] || ""}
-                            onChange={(e) =>
-                              setAnswers(p => ({ ...p, [fid]: e.target.value }))
-                            }
-                          />
-                          <Button
-                            onClick={() => handleSubmit(flag)}
-                            disabled={loading[fid]}
-                            sx={{ minWidth: 44 }}
-                          >
-                            <SendIcon fontSize="small" />
-                          </Button>
-                        </Stack>
-                      )}
-
-                      {/* HINT */}
-                      {hintOpen[fid] && flag.hint_string && (
-                        <Box
-                          sx={{
-                            mt: 1,
-                            p: 1,
-                            borderRadius: 2,
-                            border: `1px solid ${TEAL}`,
-                            color: TEAL,
-                            fontWeight: 700,
-                          }}
-                        >
-                          Hint (penalty applied): {flag.hint_string}
-                        </Box>
-                      )}
-
-                      {/* META */}
-                      {submittedAt && (
-                        <Typography fontSize={11} mt={0.8} color="#94a3b8">
-                          Submitted: {fmt(submittedAt)}
-                        </Typography>
-                      )}
-                    </Box>
-                  );
-                })}
-              </Stack>
-            </AccordionDetails>
-          </Accordion>
-        );
-      })}
+                  <Button
+                    color="error"
+                    onClick={() => deleteItem(index)}
+                  >
+                    Delete
+                  </Button>
+                </Stack>
+              ))}
+            </Stack>
+          </Box>
+        </Stack>
+      </Stack>
     </Stack>
   );
 }
+
+/* ================= STYLES ================= */
+
+const inputStyle = {
+  width: "100%",
+  backgroundColor: "#1C1F28",
+  border: "none",
+  borderRadius: "8px",
+  padding: "12px",
+  color: "#eaeaea",
+};
+
+const smallInput = {
+  width: "120px",
+  backgroundColor: "#1C1F28",
+  border: "none",
+  borderRadius: "8px",
+  padding: "8px",
+  color: "#eaeaea",
+};

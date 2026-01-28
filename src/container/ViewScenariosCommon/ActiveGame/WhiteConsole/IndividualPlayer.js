@@ -1,243 +1,315 @@
 import {
   Backdrop,
+  Stack,
   Box,
+  Typography,
   Button,
   Chip,
   Divider,
-  Stack,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import CircularProgress from "@mui/material/CircularProgress";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import LockIcon from "@mui/icons-material/Lock";
-import { toast } from "react-toastify";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
 
 import {
   milestoneApprovedVersion2,
   milestoneUnApprovedVersion2,
 } from "../../../../APIConfig/version2Scenario";
 
-/* ---------- helpers ---------- */
-const fmt = (ts) => (ts ? new Date(ts).toLocaleString() : "");
+import { Icons } from "../../../../components/icons";
 
-/* ---------- theme ---------- */
-const TEAL = "rgba(20,184,166,0.95)";
-const RED = "rgba(239,68,68,0.95)";
-const BG = "rgba(2,6,23,0.9)";
-const BORDER = "rgba(148,163,184,0.2)";
+/* ===================== HELPERS ===================== */
 
-/* ===================================================== */
+const fmt = (ts) => {
+  if (!ts) return "—";
+  return new Date(ts).toLocaleString();
+};
 
-export default function IndividualPlayer({ data, reload, setReload }) {
-  const iframeRef = useRef(null);
-  const [loading, setLoading] = useState(false);
-  const [localOverrides, setLocalOverrides] = useState({});
+/*WHITE TEAM PANELL  */
 
-  if (!data || data.scenario_type !== "MILESTONE") {
-    return (
-      <Stack p={3}>
-        <Typography color="#94a3b8">
-          No milestone data available
-        </Typography>
-      </Stack>
-    );
-  }
+const CISOModerationPanel = ({ data, refresh }) => {
+  const phases = Object.values(data?.itemsByPhase || {}).sort(
+    (a, b) => (a.phase_index || 0) - (b.phase_index || 0)
+  );
 
-  /* ---------- approve ---------- */
-  const approveMilestone = async (m) => {
+  const approve = async (m) => {
     try {
-      setLoading(true);
       await milestoneApprovedVersion2({
         active_scenario_id: data.active_scenario_id,
-        participant_id: data.participant_id,
         milestone_id: m.milestone_id,
+        participant_id: data.participant_id,
       });
-
       toast.success("Milestone approved");
-
-      setLocalOverrides((p) => ({
-        ...p,
-        [m.milestone_id]: { is_approved: true },
-      }));
-
-      setReload(!reload);
-    } catch {
-      toast.error("Approve failed");
-    } finally {
-      setLoading(false);
+      refresh();
+    } catch (e) {
+      toast.error("Approval failed");
     }
   };
 
-  /* ---------- reject ---------- */
-  const rejectMilestone = async (m) => {
+  const reject = async (m) => {
     try {
-      setLoading(true);
       await milestoneUnApprovedVersion2({
         active_scenario_id: data.active_scenario_id,
-        participant_id: data.participant_id,
         milestone_id: m.milestone_id,
+        participant_id: data.participant_id,
       });
-
-      toast.info("Milestone rejected");
-      setReload(!reload);
-    } catch {
-      toast.error("Reject failed");
-    } finally {
-      setLoading(false);
+      toast.error("Milestone rejected");
+      refresh();
+    } catch (e) {
+      toast.error("Rejection failed");
     }
   };
 
-  /* ===================================================== */
-
   return (
-    <Stack direction="row" height="95vh" gap={1}>
-      <Backdrop open={loading} sx={{ zIndex: 9999 }}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-
-      {/* ================= LEFT: MODERATOR PANEL ================= */}
-      <Stack
-        width="30%"
-        sx={{
-          background: BG,
-          borderRight: `1px solid ${BORDER}`,
-          p: 2,
-          overflowY: "auto",
-        }}
-      >
-        <Typography fontWeight={900} mb={1}>
-          Milestone Review
+    <Stack spacing={3} sx={{ p: 2 }}>
+      {/* HEADER */}
+      <Stack spacing={0.5}>
+        <Typography fontSize={15} fontWeight={900}>
+          CISO Review Panel
         </Typography>
-
-        {Object.values(data.itemsByPhase || {}).map((phase) => (
-          <Stack key={phase.phase_id} spacing={1.2} mb={2}>
-            <Typography fontWeight={800} color="#38bdf8">
-              {phase.phase_name}
-            </Typography>
-
-            {phase.items.map((m) => {
-              const override = localOverrides[m.milestone_id] || {};
-              const approved = override.is_approved ?? m.is_approved;
-              const submitted = m.is_achieved;
-
-              return (
-                <Box
-                  key={m.milestone_id}
-                  sx={{
-                    p: 1.2,
-                    borderRadius: 2,
-                    border: `1px solid ${
-                      approved ? TEAL : BORDER
-                    }`,
-                    background: "rgba(15,23,42,0.6)",
-                  }}
-                >
-                  {/* HEADER */}
-                  <Stack direction="row" alignItems="center">
-                    <Typography fontWeight={800} fontSize={13}>
-                      {m.milestone_name}
-                    </Typography>
-                    <Box flex={1} />
-                    <Chip size="small" label={`${m.milestone_score} pts`} />
-                  </Stack>
-
-                  {/* STATUS */}
-                  <Stack direction="row" spacing={1} mt={0.6}>
-                    {approved && (
-                      <Chip
-                        size="small"
-                        icon={<CheckCircleIcon />}
-                        label="Approved"
-                        sx={{ bgcolor: TEAL, color: "#041b1a" }}
-                      />
-                    )}
-                    {!approved && submitted && (
-                      <Chip
-                        size="small"
-                        label="Submitted"
-                        sx={{ bgcolor: "rgba(148,163,184,0.15)" }}
-                      />
-                    )}
-                    {!submitted && (
-                      <Chip
-                        size="small"
-                        icon={<LockIcon />}
-                        label="Pending"
-                      />
-                    )}
-                  </Stack>
-
-                  {/* SUBMISSION */}
-                  {m.submitted_text && (
-                    <Typography
-                      fontSize={12}
-                      color="#cbd5f5"
-                      mt={0.8}
-                    >
-                      {m.submitted_text}
-                    </Typography>
-                  )}
-
-                  {/* META */}
-                  <Typography fontSize={11} color="#94a3b8" mt={0.5}>
-                    {m.submitted_at && `Submitted: ${fmt(m.submitted_at)}`}
-                  </Typography>
-
-                  {/* ACTIONS */}
-                  {!approved && submitted && (
-                    <Stack direction="row" spacing={1} mt={1}>
-                      <Button
-                        size="small"
-                        startIcon={<CheckCircleIcon />}
-                        sx={{
-                          bgcolor: TEAL,
-                          color: "#041b1a",
-                          fontWeight: 800,
-                        }}
-                        onClick={() => approveMilestone(m)}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="small"
-                        startIcon={<CancelIcon />}
-                        sx={{
-                          bgcolor: RED,
-                          color: "#fff",
-                          fontWeight: 800,
-                        }}
-                        onClick={() => rejectMilestone(m)}
-                      >
-                        Reject
-                      </Button>
-                    </Stack>
-                  )}
-                </Box>
-              );
-            })}
-          </Stack>
-        ))}
+        <Typography fontSize={12} color="#94a3b8">
+          Participant: {data.participant_id}
+        </Typography>
       </Stack>
 
-      {/* ================= RIGHT: CONSOLE ================= */}
-      <Stack width="70%" p={1}>
-        <iframe
-          ref={iframeRef}
-          src={data.console_url}
-          title="Instance Console"
-          style={{
-            width: "100%",
-            height: "100%",
-            border: "none",
-            borderRadius: 8,
+      {phases.map((phase) => (
+        <Box key={phase.phase_id}>
+          {/* PHASE HEADER */}
+          <Typography
+            sx={{
+              fontSize: 13,
+              fontWeight: 900,
+              color: "#38bdf8",
+              mb: 1,
+            }}
+          >
+            {phase.phase_name}
+          </Typography>
+
+          {phase.items.map((m) => {
+            const status = m.is_approved
+              ? "APPROVED"
+              : m.is_achieved
+              ? "SUBMITTED"
+              : "PENDING";
+
+            return (
+              <Box
+                key={m.milestone_id}
+                sx={{
+                  mb: 1.5,
+                  p: 1.5,
+                  borderRadius: 2,
+                  background:
+                    "linear-gradient(135deg, #020617, #0f172a)",
+                  border: "1px solid rgba(148,163,184,0.25)",
+                }}
+              >
+                {/* TITLE */}
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography fontWeight={800}>
+                    {m.milestone_name}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    label={`${m.milestone_score} pts`}
+                  />
+                </Stack>
+
+                {/* STATUS */}
+                <Stack direction="row" spacing={1} mt={0.5}>
+                  {status === "APPROVED" && (
+                    <Chip
+                      icon={<CheckCircleIcon />}
+                      label="Approved"
+                      color="success"
+                      size="small"
+                    />
+                  )}
+                  {status === "SUBMITTED" && (
+                    <Chip
+                      icon={<TaskAltIcon />}
+                      label="Submitted"
+                      color="warning"
+                      size="small"
+                    />
+                  )}
+                  {status === "PENDING" && (
+                    <Chip
+                      icon={<CancelIcon />}
+                      label="Not Submitted"
+                      size="small"
+                    />
+                  )}
+                </Stack>
+
+                {/* SCORE */}
+                {m.is_approved && (
+                  <Typography
+                    sx={{ mt: 0.5, fontSize: 12, color: "#22c55e" }}
+                  >
+                    Final Score: +{m.obtained_score} pts
+                  </Typography>
+                )}
+
+                {/* TEXT */}
+                {m.submitted_text && (
+                  <Typography
+                    sx={{
+                      mt: 1,
+                      fontSize: 12,
+                      color: "#e5e7eb",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {m.submitted_text}
+                  </Typography>
+                )}
+
+                {/* EVIDENCE */}
+                {Array.isArray(m.evidence_files) &&
+                  m.evidence_files.length > 0 && (
+                    <Stack spacing={0.5} mt={1}>
+                      <Typography fontSize={11} color="#94a3b8">
+                        Attachments
+                      </Typography>
+
+                      {m.evidence_files.map((f, idx) => (
+                        <a
+                          key={idx}
+                          href={f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            fontSize: 11,
+                            color: "#60a5fa",
+                            textDecoration: "underline",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {f.name}
+                        </a>
+                      ))}
+                    </Stack>
+                )}
+
+                {/* META */}
+                <Typography
+                  sx={{
+                    mt: 1,
+                    fontSize: 11,
+                    color: "#94a3b8",
+                  }}
+                >
+                  Submitted: {fmt(m.submitted_at)} <br />
+                  Approved: {fmt(m.approved_at)}
+                </Typography>
+
+                {/* ACTIONS */}
+                {status === "SUBMITTED" && (
+                  <Stack direction="row" spacing={1} mt={1}>
+                    <Button
+                      size="small"
+                      color="success"
+                      variant="contained"
+                      onClick={() => approve(m)}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="small"
+                      color="error"
+                      variant="outlined"
+                      onClick={() => reject(m)}
+                    >
+                      Reject
+                    </Button>
+                  </Stack>
+                )}
+              </Box>
+            );
+          })}
+        </Box>
+      ))}
+    </Stack>
+  );
+};
+
+/* ===================== MAIN ===================== */
+
+const IndividualPlayer = ({ data, reload, setReload, load, gameType }) => {
+  const iframeRef = useRef(null);
+  const [full, setFull] = useState(true);
+  const [isActive, setIsActive] = useState(false);
+
+  const refresh = () => setReload(!reload);
+
+  return (
+    <Stack width="100%">
+      <Backdrop open={isActive}>
+        <CircularProgress />
+      </Backdrop>
+
+      <Stack direction="row" gap={1}>
+        {/* LEFT PANEL */}
+        <Stack
+          sx={{
+            width: full ? "30%" : "0%",
+            transition: "width 0.3s",
+            overflowY: "auto",
+            height: "95vh",
+            background:
+              "linear-gradient(180deg, #020617, #020617)",
+            borderRight: "1px solid rgba(148,163,184,0.15)",
           }}
-          sandbox="allow-same-origin allow-scripts allow-forms"
-        />
+        >
+          {full && (
+            <CISOModerationPanel
+              data={data}
+              refresh={refresh}
+            />
+          )}
+        </Stack>
+
+        {/* TOGGLE */}
+        <Tooltip title="Toggle Details">
+          {gameType === "MILESTONE" && (
+            <Icons.doubleRightArrow
+              style={{
+                fontSize: "36px",
+                cursor: "pointer",
+                width: full ? "0%" : "99.5%",
+              }}
+              onClick={() => setFull(!full)}
+            />
+          )}
+        </Tooltip>
+
+        {/* IFRAME (UNCHANGED) */}
+        <Stack
+          style={{
+            paddingTop: 4,
+            paddingBottom: 4,
+            display: "flex",
+            width: !full ? "96%" : "70%",
+            height: "95vh",
+          }}
+        >
+          <iframe
+            ref={iframeRef}
+            src={data?.console_url}
+            title="Console"
+            style={{ width: "100%", height: "100%" }}
+            allow="same-origin"
+          />
+        </Stack>
       </Stack>
     </Stack>
   );
-}
+};
 
+export default IndividualPlayer;

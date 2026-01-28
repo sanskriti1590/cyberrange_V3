@@ -1,5 +1,5 @@
 // src/pages/.../MachineProfileSenario.jsx
-
+//player console or participant console + right console iframe and left sidebar UI
 import {
   Backdrop,
   Box,
@@ -447,6 +447,11 @@ return (
                   variant="contained"
                   size="small"
                   startIcon={<ChatBubbleOutlineIcon />}
+                    onClick={() =>
+                    navigate(
+                      `/scenario-chat/${data.active_scenario_id}`
+                    )
+                  }
                   sx={{
                     flex: 1,
                     border: "3px solid #00FFFF",

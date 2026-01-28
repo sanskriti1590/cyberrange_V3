@@ -1,3 +1,4 @@
+//Kill chain progress on player console for cyberdrill  or /Kill chain progress on participant console for cyberdrill 
 import React, { useMemo } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";

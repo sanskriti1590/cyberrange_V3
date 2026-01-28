@@ -277,19 +277,19 @@ export const getConsoleTeamVersion2 = async () => {
 };
 
 // approved milestone
-export const milestoneApprovedVersion2 = async (
-  scenario_id,
+export const milestoneApprovedVersion2 = async ({
+  active_scenario_id,
   milestone_id,
-  userId
-) => {
+  participant_id,
+}) => {
   const token = localStorage.getItem("access_token");
-  const user = token && jwtDecode(token);
+
   return await APIVERSION2.post(
-    `${ApiVersion2.scenario.approved}`,
+    ApiVersion2.scenario.approved,
     {
-      active_scenario_id: scenario_id,
-      milestone_id: milestone_id,
-      participant_id: userId,
+      active_scenario_id,
+      milestone_id,
+      participant_id,
     },
     {
       headers: {
@@ -299,20 +299,19 @@ export const milestoneApprovedVersion2 = async (
   );
 };
 
-// un-approved milestone
-export const milestoneUnApprovedVersion2 = async (
-  scenario_id,
+export const milestoneUnApprovedVersion2 = async ({
+  active_scenario_id,
   milestone_id,
-  userId
-) => {
+  participant_id,
+}) => {
   const token = localStorage.getItem("access_token");
-  const user = token && jwtDecode(token);
+
   return await APIVERSION2.post(
-    `${ApiVersion2.scenario.unApproved}`,
+    ApiVersion2.scenario.unApproved,
     {
-      active_scenario_id: scenario_id,
-      milestone_id: milestone_id,
-      participant_id: userId,
+      active_scenario_id,
+      milestone_id,
+      participant_id,
     },
     {
       headers: {
@@ -504,3 +503,47 @@ export const achieveCorporateScenarioMilestone = async (payload) => {
   );
 };
 
+// SCENARIO CHAT (V3)
+export const getScenarioChatChannels = async (activeScenarioId) => {
+  const token = localStorage.getItem("access_token");
+
+  return await APIVERSION2.get(
+    `${ApiVersion2.scenario.chatChannels}${activeScenarioId}/`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+
+// GET messages for a specific channel
+export const getScenarioChatMessages = async (channelKey) => {
+  const token = localStorage.getItem("access_token");
+
+  return await APIVERSION2.get(
+    `${ApiVersion2.scenario.chatMessages}${channelKey}/`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+
+// SEND a message to a channel
+export const sendScenarioChatMessage = async (payload) => {
+  const token = localStorage.getItem("access_token");
+
+  return await APIVERSION2.post(
+    ApiVersion2.scenario.chatSend,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+}

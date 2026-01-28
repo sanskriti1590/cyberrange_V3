@@ -33,6 +33,9 @@ const ApiVersion2 = {
     achievers: `/corporate/scenario/achivers/`,
     report_api:'/corporate/scenario/report/',
     walkthroughList: "corporate/scenario/walkthroughs/",
+    chatChannels: "/corporate/scenario/chat/channels/",       
+    chatMessages: "/corporate/scenario/chat/messages/",        
+    chatSend: "/corporate/scenario/chat/send/", 
   },
 };
 

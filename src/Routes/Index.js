@@ -11,8 +11,6 @@ import SenarioMachineLayout from "../Layout/scenarioConsole";
 import UnderConstructorLayout from "../Layout/UnderConstructionLayout";
 import ErrorPageLayout from "../Layout/ErrorPages/ErrorPageLayout";
 import InfraCreate from "../container/CyberDrill/components/InfraCreate";
-
-
 // Core pages
 import Dashboard from "../container/Dashboard";
 import LoginPage from "../container/Auth/login";
@@ -48,6 +46,8 @@ import MachineProfileSenario from "../container/ViewScenariosCommon/ScenarioDeta
 import ActiveGameSenario from "../container/ViewScenariosCommon/ActiveGame";
 import WhiteTeamConsole from "../container/ViewScenariosCommon/ActiveGame/WhiteConsole/whiteConsole";
 import ScenarioPage from "../container/ViewScenariosCommon/ScenarioDetails/scenarioPage";
+import ScenarioChat from "../container/ViewScenariosCommon/ScenarioChat/ScenarioChat";
+
 
 // Admin
 import Map from "../container/Admin/CTF/Mapping";
@@ -321,6 +321,19 @@ const Router = () => {
             element: <ProtectedScenarioConsole />,
             children: [{ index: true, element: <MachineProfileSenario /> }],
         },
+
+        {
+        path: "/scenario-chat/:activeScenarioId",
+        element: <ProtectedScenarioConsole />,
+        children: [
+            {
+            index: true,
+            element: <ScenarioChat />,
+            },
+        ],
+        },
+
+        
 
         // Upload machine
         {

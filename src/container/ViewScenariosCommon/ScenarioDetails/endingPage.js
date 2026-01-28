@@ -1,3 +1,4 @@
+//PAGE AFTER SUBMITTING infra 
 import { Button, Stack, Typography } from "@mui/material"
 import uploadImg from '../../../assests/uploadIcon.png'
 
