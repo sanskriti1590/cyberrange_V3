@@ -99,7 +99,7 @@ const CorporateRequestsCard = ({ item, variant, CTAOnClick }) => {
       </Stack>
     </Stack>
       {/* Render CTA Button */ }
-  { variant === "approve" && renderCTAButton("Approve") }
+  { variant === "approve" && renderCTAButton("Review & Approve") }
   { variant === "unApprove" && renderCTAButton("Unapprove") }
     </Stack >
   );

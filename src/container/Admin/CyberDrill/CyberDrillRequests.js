@@ -193,7 +193,7 @@ const CorporateRequests = () => {
                     variant={tabValue === 0 ? "approve" : "unApprove"}
                     CTAOnClick={() =>
                       tabValue === 0
-                        ? approveButtonHandler(item.id)
+                        ? navigate(`/admin/corporateRequests/${item.id}/review`)
                         : unApproveButtonHandler(item.id)
                     }
                   />

@@ -22,6 +22,51 @@ const TEAMS = [
   { key: "YELLOW", title: "Yellow Team Flags", color: "#F79D28" },
 ];
 
+const buildTeamDataFromDraft = (items = []) => {
+  const base = {};
+
+  TEAMS.forEach((t) => {
+    base[t.key] = {
+      walkthrough: [],
+      items: [],
+    };
+  });
+
+  items.forEach((it) => {
+    const team = (it.team || "").toUpperCase();
+    if (!base[team]) return;
+
+    base[team].items.push({
+      id: it.id || crypto.randomUUID(),
+
+      // ✅ FIXED FIELD MAPPING
+      phase_id: it.phase_id || "",
+
+      // FLAG uses "question", milestone uses "name"
+      name: it.question || it.name || "",
+
+      answer: it.answer || "",
+      hint: it.hint || "",
+
+      // backend uses score, UI uses points
+      points: it.score ?? it.points ?? 100,
+      hint_penalty: it.hint_penalty ?? 0,
+
+      placeholder: it.placeholder || "",
+      show_placeholder: it.show_placeholder ?? true,
+      is_locked: it.is_locked ?? false,
+    });
+  });
+
+  // ensure at least one item per team
+  Object.keys(base).forEach((k) => {
+    if (!base[k].items.length) {
+      base[k].items.push(createEmptyItem());
+    }
+  });
+
+  return base;
+};
 /* ================= DEFAULT FLAG ================= */
 
 const createEmptyItem = () => ({
@@ -59,17 +104,9 @@ export default function FlagMilestonePanel({
 
   const [activeTeam, setActiveTeam] = useState("BLUE");
 
-  const [teamData, setTeamData] = useState(() => {
-    const base = {};
-    TEAMS.forEach((t) => {
-      base[t.key] = {
-        walkthrough: [],
-        items: [createEmptyItem()],
-      };
-    });
-    return base;
-  });
-
+ const [teamData, setTeamData] = useState(() =>
+    buildTeamDataFromDraft(draft.items)
+  );
   /* ========== HELPERS ========== */
 
   const updateItem = (index, field, value) => {
@@ -130,6 +167,11 @@ export default function FlagMilestonePanel({
     onNext(allItems);
   };
 
+  React.useEffect(() => {
+  if (Array.isArray(draft.items)) {
+    setTeamData(buildTeamDataFromDraft(draft.items));
+  }
+}, [draft.items]);
   /* ================= UI ================= */
 
   return (

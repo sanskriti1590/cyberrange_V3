@@ -115,7 +115,8 @@ export default function CyberDrill() {
       fd.append("objective", objective);
       fd.append("prerequisite", prerequisite);
       fd.append("type", d.mode);
-      fd.append("scoring_type", d.scoring_type);
+      fd.append("scoring_type", d.scoring_type.toLowerCase());
+
 
       // only send decay config if selected
       if (d.scoring_type === "DECAY") {

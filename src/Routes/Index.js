@@ -72,6 +72,10 @@ import UpadateCtf from "../container/Admin/CTF/CTF-UPDATE/upadeCtf";
 import UpdateScenario from "../container/Admin/Senario/senario-upadate";
 import OngoingCTFChallenge from "../container/Admin/ongoingCTFChallenges";
 import CorporateRequests from "../container/Admin/CyberDrill/CyberDrillRequests";
+import CorporateInfraReview from "../container/Admin/CyberDrill/CorporateInfraReview";
+import CyberDrillUpdate from "../container/Admin/CyberDrill/Cyberdrill-Update/CyberDrillUpdate";
+import CyberDrillScenarioList from "../container/Admin/CyberDrill/CyberDrillScenarioList";
+
 
 // Web Scenarios (admin & user)
 import WebScenarioCategories from "../container/Admin/WebScenarios/WebScenarioCategories";
@@ -324,17 +328,15 @@ const Router = () => {
 
         {
         path: "/scenario-chat/:activeScenarioId",
-        element: <ProtectedScenarioConsole />,
-        children: [
-            {
-            index: true,
-            element: <ScenarioChat />,
-            },
-        ],
+        element: (
+            <RequireAuth>
+            <ScenarioChat />
+            </RequireAuth>
+        ),
         },
 
-        
 
+        
         // Upload machine
         {
             path: "/createSolo",
@@ -409,6 +411,10 @@ const Router = () => {
                 { path: "editSquadCategories/:categoryId", element: <EditScenarioCategories /> },
 
                 { path: "corporateRequests", element: <CorporateRequests /> },
+                { path: "cyberdrill", element: <CyberDrillScenarioList /> },
+                { path: "cyberdrill/:scenarioId/edit", element: <CyberDrillUpdate /> },
+
+                { path:"/admin/corporateRequests/:id/review", element:<CorporateInfraReview />},
                 { path: "webScenarioRequests", element: <WebScenarioRequests /> },
                 { path: "squadRequests", element: <ScenarioRequests /> },
                 { path: "soloRequests", element: <CTFRequests /> },

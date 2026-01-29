@@ -84,6 +84,37 @@ export const UnApprovedCorporateRequestsFromDB = async (data) => {
 	});
 };
 
+//  INFRA REVIEW 
+
+export const getCorporateInfraForReview = async (corporate_id) => {
+  const token = localStorage.getItem("access_token");
+  return await API.get(
+    `${ApiConfig.admin.corporateInfraReview}?corporate_id=${corporate_id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const saveCorporateInfraReview = async (data) => {
+  const token = localStorage.getItem("access_token");
+  return await API.post(
+    ApiConfig.admin.corporateInfraReviewSave,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+
+//cyberdrill update
+
+
 // .approved scenario post request
 // user data
 export const UserData = async (data) => {
@@ -693,3 +724,84 @@ export const updateWebScenario = async (id, formData) => {
 	}
 	);
 };
+
+export const getScenarioDetail = async (id) => {
+  const token = localStorage.getItem('access_token');
+  return await API.get(`${ApiConfig.scenario.scenarioDetails}${id}/`, {
+	headers: {
+	  Authorization: `Bearer ${token}`,
+	},
+  });
+}
+
+export const updateCorporateScenarioBasic = async (scenarioId, payload) => {
+  const token = localStorage.getItem("access_token");
+
+  return await API.post(
+    ApiConfig.admin.updateCorporateScenarioBasic,
+    {
+      scenario_id: scenarioId,
+      ...payload,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const updateCorporateScenarioPhases = async (scenarioId, phases) => {
+  const token = localStorage.getItem("access_token");
+
+  return await API.post(
+    ApiConfig.admin.updateCorporateScenarioPhases,
+    {
+      scenario_id: scenarioId,
+      phases: phases,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const updateCorporateScenarioFlags = async (scenarioId, flags) => {
+  const token = localStorage.getItem("access_token");
+
+  return await API.post(
+    ApiConfig.admin.updateCorporateScenarioFlags,
+    {
+      scenario_id: scenarioId,
+      flags: flags,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const updateCorporateScenarioMilestones = async (
+  scenarioId,
+  milestones
+) => {
+  const token = localStorage.getItem("access_token");
+
+  return await API.post(
+    ApiConfig.admin.updateCorporateScenarioMilestones,
+    {
+      scenario_id: scenarioId,
+      milestones: milestones,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+

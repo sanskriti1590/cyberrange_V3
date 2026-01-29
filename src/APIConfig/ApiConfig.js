@@ -65,6 +65,8 @@ const ApiConfig = {
     approvalCorporateRequests: `/admin/corporate/game-unapprove/`,
     unApprovalScenario: `/admin/scenario/game-unapprove/`,
     unApprovalCorporateRequests: `/admin/corporate/game-unapprove/`,
+    corporateInfraReview: "/admin/corporate/infra-review/",
+    corporateInfraReviewSave: "/admin/corporate/infra-review/save/",
     userModify: `/admin/user/update/`,
     userDetails: `/admin/user/`,
     upMapCtf: `/admin/ctf/unmapped-game/list/`,
@@ -98,6 +100,10 @@ const ApiConfig = {
 
     webScenarioCategories: "/admin/web-based/categories/",
     webScenarioGames: "/admin/web-based/games/",
+    updateCorporateScenarioBasic: "/admin/corporate/scenario/update-basic/",
+    updateCorporateScenarioPhases: "/admin/corporate/scenario/update-phases/",
+    updateCorporateScenarioFlags: "/admin/corporate/scenario/update-flags/",
+    updateCorporateScenarioMilestones: "/admin/corporate/scenario/update-milestones/",
   },
   game: {
     leaderboard: `/ctf/game/leaderboard/`,

@@ -1,16 +1,20 @@
-import React, { useEffect, useState } from "react";
+// src/container/ViewScenariosCommon/ScenarioChat/ScenarioChat.jsx
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Stack,
   Typography,
-  Button,
-  Avatar,
+  IconButton,
+  Chip,
   Divider,
-  TextField,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import SendIcon from "@mui/icons-material/Send";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { useNavigate, useParams } from "react-router-dom";
+import jwtDecode from "jwt-decode";
+import { toast } from "react-toastify";
 
 import {
   getScenarioChatChannels,
@@ -18,136 +22,208 @@ import {
   sendScenarioChatMessage,
 } from "../../../APIConfig/version2Scenario";
 
-import "./index.css";
+import ChannelTabs from "./ChannelTabs";
+import MessageList from "./MessageList";
+import MessageInput from "./MessageInput";
+import { sanitizeMessage } from "./chatUtils";
+
+const BG = "#020617";
+const BORDER = "#1e293b";
 
 export default function ScenarioChat() {
   const { activeScenarioId } = useParams();
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(false);
   const [channels, setChannels] = useState([]);
-  const [activeChannel, setActiveChannel] = useState(null);
+  const [activeChannelKey, setActiveChannelKey] = useState("");
   const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
+  const [input, setInput] = useState("");
+  const [file, setFile] = useState(null);
 
-  // -------------------------------
-  // Load channels
-  // -------------------------------
-  useEffect(() => {
-    async function loadChannels() {
-      const res = await getScenarioChatChannels(activeScenarioId);
-      const ch = res?.data?.channels || [];
-      setChannels(ch);
-      if (ch.length) setActiveChannel(ch[0]);
+  /* ================= CURRENT USER ================= */
+  const { currentUserName, currentUserId } = useMemo(() => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) return { currentUserName: "You", currentUserId: null };
+      const u = jwtDecode(token);
+      return {
+        currentUserName: u?.name || u?.username || u?.email || "You",
+        currentUserId: u?.user_id || u?.id || null,
+      };
+    } catch {
+      return { currentUserName: "You", currentUserId: null };
     }
-    loadChannels();
-  }, [activeScenarioId]);
+  }, []);
 
-  // -------------------------------
-  // Load messages
-  // -------------------------------
-  useEffect(() => {
-    if (!activeChannel) return;
+  const activeChannel = useMemo(
+    () => channels.find((c) => c.channel_key === activeChannelKey) || null,
+    [channels, activeChannelKey]
+  );
 
-    async function loadMessages() {
-      const res = await getScenarioChatMessages(
-        activeChannel.channel_key
-      );
-      setMessages(res?.data?.messages || []);
+  const canHitApi = Boolean(activeScenarioId);
+
+  /* ================= LOAD CHANNELS ================= */
+  const loadChannels = async () => {
+    if (!canHitApi) return;
+    const res = await getScenarioChatChannels(activeScenarioId);
+    const list = res?.data?.channels || [];
+    setChannels(list);
+
+    if (!activeChannelKey && list.length) {
+      const prefer =
+        list.find((c) => c.scope.endsWith("_TEAM")) ||
+        list.find((c) => c.scope === "ALL") ||
+        list.find((c) => c.scope === "GLOBAL");
+      setActiveChannelKey(prefer?.channel_key || "");
     }
-    loadMessages();
-  }, [activeChannel]);
+  };
 
-  // -------------------------------
-  // Send message
-  // -------------------------------
-  const sendMessage = async () => {
-    if (!text.trim()) return;
-
-    await sendScenarioChatMessage({
-      active_scenario_id: activeScenarioId,
-      channel_key: activeChannel.channel_key,
-      message: text,
-    });
-
-    setText("");
-    const res = await getScenarioChatMessages(
-      activeChannel.channel_key
-    );
+  const loadMessages = async (channelKey) => {
+    if (!channelKey) return;
+    const res = await getScenarioChatMessages(channelKey);
     setMessages(res?.data?.messages || []);
   };
 
+  useEffect(() => {
+    if (!canHitApi) return;
+    setLoading(true);
+    loadChannels()
+      .catch(() => toast.error("Failed to load chat"))
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line
+  }, [activeScenarioId]);
+
+  useEffect(() => {
+    if (!activeChannelKey) return;
+    loadMessages(activeChannelKey);
+    // eslint-disable-next-line
+  }, [activeChannelKey]);
+
+  /* ================= SEND MESSAGE ================= */
+  const onSend = async () => {
+    if (!activeChannelKey) return;
+
+    const clean = sanitizeMessage(input);
+    if (!clean && !file) return;
+
+    // optimistic UI
+    const optimistic = {
+      id: `OPT_${Date.now()}`,
+      message: clean,
+      sender_user_id: currentUserId,
+      sender_name: currentUserName,
+      sender_role: "SELF",
+      created_at: new Date().toISOString(),
+      attachments: file
+        ? [{ id: "tmp", file_name: file.name, file_url: "#" }]
+        : [],
+    };
+
+    setMessages((p) => [...p, optimistic]);
+    setInput("");
+    setFile(null);
+
+    try {
+      await sendScenarioChatMessage({
+        active_scenario_id: activeScenarioId,
+        channel_key: activeChannelKey,
+        message: clean,
+        attachments: file ? [file] : [],   // ✅ IMPORTANT
+      });
+
+      await loadMessages(activeChannelKey);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to send message");
+    }
+  };
+
   return (
-    <Box className="chat-root">
-      {/* Header */}
-      <Stack direction="row" alignItems="center" spacing={1}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(-1)}
-        >
-          Back to Console
-        </Button>
-        <Typography variant="h6">
-          Team Chat
-        </Typography>
-      </Stack>
+    <Box sx={{ minHeight: "100vh", bgcolor: BG }}>
+      <Backdrop open={loading} sx={{ color: "#fff", zIndex: 9999 }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
 
-      {/* Channel Tabs */}
-      <Stack direction="row" spacing={1} mt={2}>
-        {channels.map((c) => (
-          <Button
-            key={c.channel_key}
-            onClick={() => setActiveChannel(c)}
-            className={
-              activeChannel?.channel_key === c.channel_key
-                ? "tab-active"
-                : "tab"
-            }
-          >
-            {c.team_group} • {c.scope}
-          </Button>
-        ))}
-      </Stack>
+      {/* HEADER */}
+      <Box
+        sx={{
+          height: 56,
+          px: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: `1px solid ${BORDER}`,
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <IconButton onClick={() => navigate(-1)}>
+            <ArrowBackIcon sx={{ color: "#e5e7eb" }} />
+          </IconButton>
+          <Typography sx={{ color: "#e5e7eb", fontWeight: 800 }}>
+            Scenario Chat
+          </Typography>
+        </Stack>
 
-      {/* Messages */}
-      <Box className="chat-box">
-        {messages.map((m, i) => (
-          <Stack
-            key={i}
-            direction="row"
-            spacing={1}
-            className={
-              m.sender_user_id === "ME"
-                ? "msg-right"
-                : "msg-left"
-            }
-          >
-            <Avatar>{m.sender_name?.[0]}</Avatar>
-            <Box className="bubble">
-              <Typography className="sender">
-                {m.sender_name}
-              </Typography>
-              <Typography>
-                {m.message}
-              </Typography>
-            </Box>
-          </Stack>
-        ))}
+        <Chip
+          label={activeChannel?.label || "—"}
+          size="small"
+          sx={{ color: "#cbd5e1", border: `1px solid ${BORDER}` }}
+        />
       </Box>
 
-      <Divider />
-
-      {/* Input */}
-      <Stack direction="row" spacing={1}>
-        <TextField
-          fullWidth
-          placeholder="Type a message…"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+      {/* BODY */}
+      <Box sx={{ p: 2 }}>
+        <ChannelTabs
+          channels={channels}
+          activeChannelKey={activeChannelKey}
+          onChange={setActiveChannelKey}
         />
-        <Button onClick={sendMessage}>
-          <SendIcon />
-        </Button>
-      </Stack>
+
+        <Box
+          sx={{
+            mt: 2,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 2,
+            display: "flex",
+            flexDirection: "column",
+            height: "calc(100vh - 160px)",
+          }}
+        >
+          <Box
+            sx={{
+              px: 2,
+              py: 1,
+              borderBottom: `1px solid ${BORDER}`,
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <Typography sx={{ fontSize: 13, color: "#94a3b8" }}>
+              {activeChannel?.label || "Chat"}
+            </Typography>
+            <IconButton size="small" onClick={() => loadMessages(activeChannelKey)}>
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+          </Box>
+
+          <Divider />
+
+          <MessageList
+            messages={messages}
+            currentUserId={currentUserId}
+          />
+
+          <MessageInput
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onSend={onSend}
+            file={file}
+            setFile={setFile}
+            disabledSend={!sanitizeMessage(input)}
+          />
+        </Box>
+      </Box>
     </Box>
   );
 }

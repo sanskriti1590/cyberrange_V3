@@ -31,6 +31,8 @@ import reImg from "../ActiveGame/2671.png";
 import CustomModal from "../../../components/ui/CustomModal";
 import ErrorHandler from "../../../ErrorHandler";
 import LiveScore from "./LiveScore";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+
 
 const SURFACE = "#16181F";
 const SURFACE_2 = "#1C1F28";
@@ -730,28 +732,61 @@ const WhitePlayer = () => {
                       </Stack>
                     </Glass>
 
-                    <Glass sx={{ p: 1.6, flex: 1 }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Stack>
-                          <Typography sx={{ color: TXT_MUTED, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.6 }}>
-                            Active Scenario
-                          </Typography>
-                          <Typography sx={{ color: TXT, fontSize: 12, fontWeight: 800 }}>
-                            {data?.active_scenario_id}
-                          </Typography>
-                        </Stack>
-                        <Chip
-                          label={`Group: ${groupVal === "ALL" ? "All Teams" : groupVal}`}
-                          size="small"
+                  <Glass sx={{ p: 1.6, flex: 1 }}>
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      spacing={2}
+                    >
+                      {/* Scenario Info */}
+                      <Stack>
+                        <Typography
                           sx={{
-                            bgcolor: "rgba(167,139,250,0.08)",
-                            color: "#a78bfa",
-                            border: "1px solid rgba(167,139,250,0.18)",
-                            fontWeight: 800,
+                            color: TXT_MUTED,
+                            fontSize: 12,
+                            textTransform: "uppercase",
+                            letterSpacing: 0.6,
                           }}
-                        />
+                        >
+                          Active Scenario
+                        </Typography>
+                        <Typography sx={{ color: TXT, fontSize: 12, fontWeight: 800 }}>
+                          {data?.active_scenario_id}
+                        </Typography>
                       </Stack>
-                    </Glass>
+
+
+                      {/* 🔥 WHITE TEAM CHAT BUTTON */}
+                      <Button
+                        size="small"
+                        startIcon={<ChatBubbleOutlineIcon />}
+                        onClick={() => {
+                          if (!data?.active_scenario_id) return;
+
+                          window.open(
+                            `/scenario-chat/${data.active_scenario_id}`,
+                            "_blank",
+                            "noopener,noreferrer"
+                          );
+                        }}
+                        sx={{
+                          ml: 2,
+                          px: 2,
+                          borderRadius: 3,
+                          border: "2px solid #22d3ee",
+                          background: "linear-gradient(135deg, #0f172a, #22d3ee)",
+                          color: "#020617",
+                          fontWeight: 900,
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #22d3ee, #0f172a)",
+                          },
+                        }}
+                      >
+                        White Team Chat
+                      </Button>
+                    </Stack>
+                  </Glass>
                   </Stack>
                 </Stack>
               </Stack>

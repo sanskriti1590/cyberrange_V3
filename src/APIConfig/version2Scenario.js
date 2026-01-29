@@ -504,46 +504,64 @@ export const achieveCorporateScenarioMilestone = async (payload) => {
 };
 
 // SCENARIO CHAT (V3)
+
 export const getScenarioChatChannels = async (activeScenarioId) => {
   const token = localStorage.getItem("access_token");
-
   return await APIVERSION2.get(
     `${ApiVersion2.scenario.chatChannels}${activeScenarioId}/`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    { headers: { Authorization: `Bearer ${token}` } }
   );
 };
 
-
-// GET messages for a specific channel
 export const getScenarioChatMessages = async (channelKey) => {
   const token = localStorage.getItem("access_token");
-
   return await APIVERSION2.get(
     `${ApiVersion2.scenario.chatMessages}${channelKey}/`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    { headers: { Authorization: `Bearer ${token}` } }
   );
 };
 
-
-// SEND a message to a channel
 export const sendScenarioChatMessage = async (payload) => {
   const token = localStorage.getItem("access_token");
 
+  const fd = new FormData(); // ✅ THIS WAS MISSING
+
+  fd.append("active_scenario_id", payload.active_scenario_id);
+  fd.append("channel_key", payload.channel_key);
+
+  if (payload.message) {
+    fd.append("message", payload.message);
+  }
+
+  // Attachments (optional)
+  if (Array.isArray(payload.attachments)) {
+    payload.attachments.forEach((file) => {
+      if (file) {
+        fd.append("attachments", file);
+      }
+    });
+  }
+
   return await APIVERSION2.post(
     ApiVersion2.scenario.chatSend,
-    payload,
+    fd,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+export const getCorporateScenarioDetail = async (scenarioId) => {
+  const token = localStorage.getItem("access_token");
+  return await APIVERSION2.get(
+    `${ApiVersion2.scenario.corporateDetail}${scenarioId}/`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     }
   );
-}
+};

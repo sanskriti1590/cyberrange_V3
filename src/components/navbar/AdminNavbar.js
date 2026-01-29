@@ -122,7 +122,7 @@ const AdminNavbar = () => {
                     startIcon: <SportsEsportsOutlinedIcon />,
                 },
                 {
-                    name: "Corporate Approved",
+                    name: "Cyberdrill Approved",
                     linkName: "/admin/corporateRequests",
                     to: "/admin/corporateRequests",
                     classHighLighter: "/admin/corporateRequests",
@@ -145,6 +145,14 @@ const AdminNavbar = () => {
             startIcon: <Icons.update style={{ fontSize: "24px" }} />,
             status: "Update",
             options: [
+
+                {
+                name: "Update CyberDrill",
+                linkName: "/admin/cyberdrill",
+                to: "/admin/cyberdrill",
+                classHighLighter: "/admin/cyberdrill",
+                startIcon: <SportsEsportsOutlinedIcon />,
+                },
 
                 {
                     name: "Update Squad",
