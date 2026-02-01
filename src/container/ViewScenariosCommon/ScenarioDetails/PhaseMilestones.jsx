@@ -84,6 +84,7 @@ export default function PhaseMilestoen({
     return ids.map((pid) => ({ phase_id: pid, ...(itemsByPhase[pid] || {}) }));
   }, [itemsByPhase, phaseOrder]);
 
+
   const [expanded, setExpanded] = useState(phases?.[0]?.phase_id || false);
 
   const [textByMilestone, setTextByMilestone] = useState({});
@@ -111,6 +112,7 @@ export default function PhaseMilestoen({
       return { ...p, [mid]: arr };
     });
   };
+
 
   /* ---------- hint ---------- */
   const handleHint = async (m, phaseLocked) => {
@@ -364,6 +366,9 @@ export default function PhaseMilestoen({
                   const locked =
                     !!m.locked || !!m.locked_by_admin || !!phaseLocked;
 
+                  const showFakePlaceholder =
+                      m.show_placeholder === true && !done;
+
                   const hintUsed = !!m.hint_used;
 
                   const localFiles = filesByMilestone[mid] || [];
@@ -475,6 +480,7 @@ export default function PhaseMilestoen({
                           </Box>
                         </Tooltip>
 
+
                         {locked && (
                           <LockIcon sx={{ fontSize: 18, color: "#94a3b8" }} />
                         )}
@@ -553,25 +559,33 @@ export default function PhaseMilestoen({
                           </Stack>
                         ) : (
                           <>
-                            <TextField
-                              multiline
-                              minRows={3}
-                              fullWidth
-                              placeholder="Write your submission / evidence notes..."
-                              value={textByMilestone[mid] ?? ""}
-                              onChange={(e) =>
-                                setTextByMilestone((p) => ({
-                                  ...p,
-                                  [mid]: e.target.value,
-                                }))
-                              }
-                              sx={{
-                                mt: 0.5,
-                                "& .MuiOutlinedInput-root": {
-                                  borderRadius: 2,
-                                },
-                              }}
-                            />
+                        <TextField
+                          multiline
+                          minRows={3}
+                          fullWidth
+
+                          placeholder={
+                            m.placeholder?.trim()
+                              ? m.placeholder
+                              : "Write your submission / evidence notes..."
+                          }
+
+                          value={textByMilestone[mid] ?? ""}
+
+                          onChange={(e) =>
+                            setTextByMilestone((p) => ({
+                              ...p,
+                              [mid]: e.target.value,
+                            }))
+                          }
+
+                          sx={{
+                            mt: 0.5,
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                        />
 
                             <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                               <Button

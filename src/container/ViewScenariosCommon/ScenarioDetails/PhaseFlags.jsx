@@ -279,6 +279,8 @@ export default function PhaseFlag({
                   const isCorrect = !!flag.is_correct;
                   const isLocked = !!flag.locked || !!flag.locked_by_admin;
                   const hintUsed = !!flag.hint_used;
+                  const showFakePlaceholder =
+                    flag.show_placeholder === true && !isCorrect;
 
                   const cardBorder = isCorrect
                     ? TEAL_BORDER
@@ -414,21 +416,31 @@ export default function PhaseFlag({
                           </Stack>
                         ) : (
                           <Stack direction="row" spacing={1}>
-                            <TextField
-                              fullWidth
-                              size="small"
-                              placeholder="Enter flag value..."
-                              value={answers[fid] || ""}
-                              onChange={(e) =>
-                                setAnswers((p) => ({ ...p, [fid]: e.target.value }))
-                              }
-                              disabled={isLocked || phaseLocked}
-                              sx={{
-                                "& .MuiOutlinedInput-root": {
-                                  borderRadius: 2,
-                                },
-                              }}
-                            />
+                        <TextField
+                          fullWidth
+                          size="small"
+
+                          placeholder={
+                            flag.placeholder?.trim()
+                              ? flag.placeholder
+                              : "Enter flag value..."
+                          }
+
+                          value={answers[fid] || ""}
+
+                          onChange={(e) =>
+                            setAnswers((p) => ({
+                              ...p,
+                              [fid]: e.target.value,
+                            }))
+                          }
+
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                        />
 
                             <Button
                               variant="contained"

@@ -34,7 +34,6 @@ import { Icons } from "../../../components/icons";
 import { Download } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import ErrorHandler from "../../../ErrorHandler";
-import { generateReportPDF } from "../../WinningWall/PlayerProfile";
 
 export const LongText = ({ content, limit }) => {
   const [showAll, setShowAll] = useState(false);
@@ -139,10 +138,6 @@ const Card = ({
     }
   };
 
-  const generateReportPDFfunction = async (actScenId, userId) => {
-    generateReportPDF(actScenId, userId);
-    navigate("/");
-  };
 
   return (
     <Box>

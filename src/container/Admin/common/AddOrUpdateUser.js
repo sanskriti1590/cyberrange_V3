@@ -202,6 +202,8 @@ const AddOrUpdateUser = ({ template, data }) => {
                   <MenuItem value="WHITE TEAM">White Team</MenuItem>
                   <MenuItem value="BLUE TEAM">Blue Team</MenuItem>
                   <MenuItem value="YELLOW TEAM">Yellow Team</MenuItem>
+                   <MenuItem value="PURPLE TEAM">Purple Team</MenuItem>
+
                 </Select>
                 {formik.touched.team && formik.errors.team && (
                   <Typography variant="caption" color="error">

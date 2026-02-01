@@ -60,7 +60,7 @@ const ApiConfig = {
     listOfUnApprovedScenario: `/admin/scenario/game-approve/`,
     listOfUnApprovedCorporateRequests: `/admin/corporate/game-approve/`,
     approveScenario: `/admin/scenario/game-approve/`,
-    approveCorporateRequests: `/admin/corporate/game-approve/`,
+    approveCorporateRequests: `/admin/corporate/game-approve/submit/`,
     approvalScenario: `/admin/scenario/game-unapprove/`,
     approvalCorporateRequests: `/admin/corporate/game-unapprove/`,
     unApprovalScenario: `/admin/scenario/game-unapprove/`,

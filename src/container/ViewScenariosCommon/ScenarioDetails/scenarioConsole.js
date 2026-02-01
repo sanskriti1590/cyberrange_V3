@@ -207,272 +207,268 @@ return (
     sx={{
       height: "100vh",
       width: "100vw",
-      position: "relative",
       backgroundColor: "#000",
       overflow: "hidden",
     }}
   >
-    {/* ================= FULLSCREEN CONSOLE ================= */}
-    <Box
-      sx={{
-        position: "absolute",
-        inset: 0,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Top Bar */}
-      <Box
-        sx={{
-          height: 48,
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          px: 1,
-          background: "rgba(2,6,23,0.9)",
-          borderBottom: "1px solid #1e293b",
-          zIndex: 2,
-        }}
-      >
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={() => setShowSidebar((p) => !p)}
-        >
-          {showSidebar ? "Hide Details" : "Show Details"}
-        </Button>
+    {/* ================= MAIN LAYOUT ================= */}
+    <Stack direction="row" height="100%" width="100%">
 
-        {consoles.length > 0 && (
-          <Select
-            size="small"
-            value={selected_instance_id || ""}
-            onChange={(e) => handleSwitchMachine(e.target.value)}
-            disabled={switching}
-            sx={{ minWidth: 240 }}
-          >
-            {consoles.map((c) => (
-              <MenuItem key={c.instance_id} value={c.instance_id}>
-                {c.instance_id}
-              </MenuItem>
-            ))}
-          </Select>
-        )}
-      </Box>
-
-      {/* Console Iframe */}
-      <Box sx={{ flex: 1 }}>
-        <iframe
-          src={console_url}
-          title="Scenario Console"
-          style={{
-            width: "100%",
+      {/* ================= SIDEBAR ================= */}
+      {showSidebar && (
+        <Box
+          sx={{
+            width: 400,
             height: "100%",
-            border: "none",
-            display: "block",
+            display: "flex",
+            flexDirection: "column",
+            background: "rgba(2,6,23,0.97)",
+            borderRight: "1px solid #1e293b",
+            zIndex: 2,
           }}
-        />
-      </Box>
-    </Box>
+        >
+          {/* Scrollable Content */}
+          <Box sx={{ flex: 1, overflowY: "auto", p: 1.5 }}>
+            {/* Header */}
+            <Stack direction="row" alignItems="center" spacing={1} mb={2}>
+              <Button
+                size="small"
+                startIcon={<ArrowBackIcon />}
+                onClick={() => navigate(-1)}
+              >
+                Back
+              </Button>
 
-    {/* ================= SIDE PANEL (OVERLAY) ================= */}
-    {showSidebar && (
-      <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          height: "100%",
-          width: 400,
-          zIndex: 3,
-          display: "flex",
-          flexDirection: "column",
-          background: "rgba(2,6,23,0.97)",
-          borderRight: "1px solid #1e293b",
-        }}
-      >
-        {/* Scrollable Content */}
-        <Box sx={{ flex: 1, overflowY: "auto", p: 1.5 }}>
-          {/* Header */}
-          <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-            <Button
-              size="small"
-              startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(-1)}
+              <Box sx={{ flex: 1 }} />
+
+              <Tooltip title="Refresh">
+                <IconButton size="small" onClick={fetchConsole}>
+                  <RefreshIcon />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+
+            {/* Scenario Header Card */}
+            <Box
+              sx={{
+                p: 1.5,
+                mb: 2,
+                borderRadius: 2,
+                background:
+                  "linear-gradient(180deg, #020617 0%, #020617cc 100%)",
+                border: "1px solid #1e293b",
+              }}
             >
-              Back
-            </Button>
+              <Typography
+                sx={{
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  color: "#e5e7eb",
+                  mb: 1,
+                }}
+              >
+                {name}
+              </Typography>
 
-            <Box sx={{ flex: 1 }} />
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                <Chip
+                  size="small"
+                  label={severity}
+                  sx={{
+                    backgroundColor: "rgba(148,163,184,0.15)",
+                    color: "#e5e7eb",
+                  }}
+                />
 
-            <Tooltip title="Refresh">
-              <IconButton size="small" onClick={fetchConsole}>
-                <RefreshIcon />
-              </IconButton>
-            </Tooltip>
-          </Stack>
+                {scenario_type === "FLAG" && (
+                  <Chip
+                    size="small"
+                    label={`${kill_chain_progress.filter(p => p.is_complete).length}/${kill_chain_progress.length} Flags`}
+                    sx={{
+                      backgroundColor: "rgba(56,189,248,0.18)",
+                      color: "#7dd3fc",
+                    }}
+                  />
+                )}
 
-        {/*  Scenario Header Card */}
+                {scenario_type === "MILESTONE" && (
+                  <Chip
+                    size="small"
+                    label="Milestone Scenario"
+                    sx={{
+                      backgroundColor: "rgba(168,85,247,0.18)",
+                      color: "#c4b5fd",
+                    }}
+                  />
+                )}
+
+                <Chip
+                  size="small"
+                  label={`${total_score} Points`}
+                  sx={{
+                    backgroundColor: "#00ffffb8",
+                    color: "#fff",
+                    fontWeight: 700,
+                  }}
+                />
+              </Stack>
+            </Box>
+
+            {/* Kill Chain */}
+            <KillChainProgress
+              killChainProgress={kill_chain_progress}
+              currentPhaseId={
+                kill_chain_progress?.find(p => !p.is_complete)?.phase_id
+              }
+            />
+
+            {/* Flags / Milestones */}
+            <Box mt={2}>
+              {scenario_type === "FLAG" ? (
+                <Flags
+                  activeScenarioId={activeScenarioId}
+                  itemsByPhase={items_by_phase}
+                  refresh={fetchConsole}
+                />
+              ) : (
+                <Milestone
+                  activeScenarioId={activeScenarioId}
+                  itemsByPhase={items_by_phase}
+                  refresh={fetchConsole}
+                />
+              )}
+            </Box>
+
+            {/* Walkthrough */}
+            <Box mt={2}>
+              <ScenarioWalkthrough
+                walkthroughDocs={walkthroughDocs}
+                killChainProgress={kill_chain_progress}
+              />
+            </Box>
+          </Box>
+
+          {/* Footer */}
           <Box
             sx={{
               p: 1.5,
-              mb: 2,
-              borderRadius: 2,
-              background: "linear-gradient(180deg, #020617 0%, #020617cc 100%)",
-              border: "1px solid #1e293b",
+              borderTop: "1px solid #1e293b",
+              display: "flex",
+              gap: 1,
             }}
           >
-            {/* Title */}
-            <Typography
+            {data?.active_scenario_id && (
+              <GetIP active_scenario_id={data.active_scenario_id} />
+            )}
+
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<ChatBubbleOutlineIcon />}
+              onClick={() =>
+                navigate(`/scenario-chat/${data.active_scenario_id}`)
+              }
               sx={{
-                fontSize: "16px",
+                flex: 1,
+                border: "3px solid #00FFFF",
+                borderRadius: 4.5,
+                background:
+                  "linear-gradient(135deg, #222E37, #22d3ee)",
+                color: "#020617",
                 fontWeight: 600,
-                color: "#e5e7eb",
-                mb: 1,
               }}
             >
-              {name}
-            </Typography>
-
-            {/* Meta Pills */}
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {/* Severity */}
-              <Chip
-                size="small"
-                label={severity}
-                sx={{
-                  backgroundColor: "rgba(148,163,184,0.15)",
-                  color: "#e5e7eb",
-                  fontWeight: 500,
-                }}
-              />
-
-              {/* Flags / Milestones (scenario dependent) */}
-              {scenario_type === "FLAG" && (
-                <Chip
-                  size="small"
-                  label={`${kill_chain_progress.filter(p => p.is_complete).length}/${kill_chain_progress.length} Flags`}
-                  sx={{
-                    backgroundColor: "rgba(56,189,248,0.18)",
-                    color: "#7dd3fc",
-                    fontWeight: 600,
-                  }}
-                />
-              )}
-
-              {scenario_type === "MILESTONE" && (
-                <Chip
-                  size="small"
-                  label="Milestone Scenario"
-                  sx={{
-                    backgroundColor: "rgba(168,85,247,0.18)",
-                    color: "#c4b5fd",
-                    fontWeight: 600,
-                  }}
-                />
-              )}
-             
-              {/* Points (VIBRANT CYAN) */}
-              <Chip
-                size="small"
-                label={`${total_score} Points`}
-                sx={{
-                  borderRadius: 2.5,
-                  backgroundColor: "#00ffffb8",
-                  color: "#ffffff",
-                  fontWeight: 700,
-                  letterSpacing: "0.3px",
-                    "& .MuiChip-label": {
-                 color: "#ffffff", 
-                }}}
-              />
-            </Stack>
-          </Box>
-
-          {/* Kill Chain Progress */}
-          <KillChainProgress
-            killChainProgress={kill_chain_progress}
-            currentPhaseId={
-              kill_chain_progress?.find((p) => !p.is_complete)?.phase_id
-            }
-            onPhaseClick={(phaseId) => {
-              // optional: scroll / focus behavior later
-              console.log("Phase clicked:", phaseId);
-            }}
-          />
-
-          {/* Flags / Milestones */}
-          <Box mt={2}>
-            {scenario_type === "FLAG" ? (
-              <Flags
-                activeScenarioId={activeScenarioId}
-                itemsByPhase={items_by_phase}
-                refresh={fetchConsole}
-              />
-            ) : (
-              <Milestone
-                activeScenarioId={activeScenarioId}
-                itemsByPhase={items_by_phase}
-                refresh={fetchConsole}
-              />
-            )}
+              Team Chat
+            </Button>
           </Box>
         </Box>
+      )}
 
-        <Box mt={2}>
-        <ScenarioWalkthrough
-          walkthroughDocs={walkthroughDocs}
-          killChainProgress={kill_chain_progress}
-        />
-      </Box>
+      {/* ================= CONSOLE AREA ================= */}
+      <Stack flex={1} height="100%" width="100%">
 
-        {/* Footer */}
+        {/* Top Bar */}
         <Box
           sx={{
-            p: 1.5,
-            borderTop: "1px solid #1e293b",
+            height: 48,
             display: "flex",
             alignItems: "center",
             gap: 1,
+            px: 1,
+            background: "rgba(2,6,23,0.9)",
+            borderBottom: "1px solid #1e293b",
           }}
         >
-          {/* Get IP */}
-        <Box sx={{ flex: "0 0 auto" }}>
-          {data?.active_scenario_id && (
-            <GetIP active_scenario_id={data.active_scenario_id} />
-          )}
+  {/* LEFT: Sidebar toggle (ICON ONLY) */}
+  <Tooltip title={showSidebar ? "Hide details" : "Show details"}>
+    <IconButton
+      size="small"
+      onClick={() => setShowSidebar((p) => !p)}
+      sx={{
+        color: "#e5e7eb",
+        border: "1px solid #1e293b",
+        borderRadius: 1,
+      }}
+    >
+      {showSidebar ? (
+        <Icons.doubleLeftArrow />
+      ) : (
+        <Icons.doubleRightArrow />
+      )}
+    </IconButton>
+  </Tooltip>
+
+  <Box sx={{ flex: 1 }} />
+
+  {/* RIGHT: Machine switch */}
+  {consoles.length > 0 && (
+    <Select
+      size="small"
+      value={selected_instance_id || ""}
+      onChange={(e) => handleSwitchMachine(e.target.value)}
+      disabled={switching}
+      sx={{
+        minWidth: 260,
+        backgroundColor: "rgba(15,23,42,0.9)",
+        color: "#e5e7eb",
+        borderRadius: 1,
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#1e293b",
+        },
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#38bdf8",
+        },
+        "& .MuiSvgIcon-root": {
+          color: "#e5e7eb",
+        },
+      }}
+    >
+      {consoles.map((c) => (
+        <MenuItem key={c.instance_id} value={c.instance_id}>
+          {c.instance_id}
+        </MenuItem>
+      ))}
+    </Select>
+  )}
+</Box>
+
+        {/* Console iframe */}
+        <Box sx={{ flex: 1, backgroundColor: "#000" }}>
+          <iframe
+            src={console_url}
+            title="Scenario Console"
+            style={{
+              width: "100%",
+              height: "100%",
+              border: "none",
+              display: "block",
+            }}
+          />
         </Box>
-
-                {/* Team Chat */}
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<ChatBubbleOutlineIcon />}
-                    onClick={() =>
-                    navigate(
-                      `/scenario-chat/${data.active_scenario_id}`
-                    )
-                  }
-                  sx={{
-                    flex: 1,
-                    border: "3px solid #00FFFF",
-                    borderRadius: 4.5,
-                    background: "linear-gradient(135deg, #222E37, #22d3ee)",
-                    color: "#020617",
-                    fontWeight: 600,
-                    "&:hover": {
-                      background: "linear-gradient(135deg, #22d3ee, #222E37)",
-                    },
-                  }}
-                >
-                  Team Chat
-                </Button>
-              </Box>
-
-            </Box>
-          )}
-        </Box>
-      );
-
+      </Stack>
+    </Stack>
+  </Box>
+);
 }
 
 export default MachineProfileSenario;

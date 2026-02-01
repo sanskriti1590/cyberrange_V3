@@ -474,7 +474,7 @@ const Router = () => {
 
         // Reports
         {
-            path: "/report/:corporateId/:user_id",
+            path: "/report/:archiveScenarioId",
             element: <ProtectedDashboard />,
             children: [{ index: true, element: <Report /> }],
         },

@@ -407,8 +407,33 @@ export const downloadReport = async (activeScenarioId, userId) => {
     }
   );
 };
+export const getExecutiveScenarioReport = async (
+  archiveScenarioId,
+  teamGroup
+) => {
+  const token = localStorage.getItem("access_token");
 
-// getCategoryCorporate
+  return APIVERSION2.get(
+    `${ApiVersion2.scenario.executiveReport}${archiveScenarioId}/${teamGroup}/`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
+
+export const getScenarioEvidenceReport = async (
+  archiveScenarioId,
+  teamGroup
+) => {
+  const token = localStorage.getItem("access_token");
+
+  return APIVERSION2.get(
+    `${ApiVersion2.scenario.evidenceReport}${archiveScenarioId}/${teamGroup}/`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
 
 export const getCategoryCorporate = async (categoryId) => {
   const token = localStorage.getItem("access_token");

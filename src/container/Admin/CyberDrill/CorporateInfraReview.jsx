@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  Box,
   Button,
   Chip,
   Divider,
@@ -27,53 +26,87 @@ export default function CorporateInfraReview() {
   const navigate = useNavigate();
 
   const [infraText, setInfraText] = useState("");
+  const [infraObj, setInfraObj] = useState(null);
   const [reviewDone, setReviewDone] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadInfra = async () => {
-      try {
-        const res = await getCorporateInfraForReview(id);
-        const data = res?.data;
+  /* ---------------- SOURCE OF TRUTH ---------------- */
+  const computeReviewDone = (infra) => {
+    if (!infra) return false;
+    return (
+      infra.status === "REVIEWED" ||
+      infra.review?.review_done === true
+    );
+  };
 
-        const infra =
-          data?.infra_reviewed ?? data?.infra_original ?? {};
+  const loadInfra = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getCorporateInfraForReview(id);
+      const data = res?.data || {};
 
-        setInfraText(JSON.stringify(infra, null, 2));
-        setReviewDone(Boolean(data?.review_done));
-      } catch (err) {
-        toast.error("Failed to load infra for review");
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadInfra();
+      // backend may return: { infra } OR legacy keys
+      const infra =
+        data.infra ??
+        data.infra_reviewed ??
+        data.infra_original ??
+        {};
+
+      setInfraObj(infra);
+      setInfraText(JSON.stringify(infra, null, 2));
+
+      // 🔥 ONLY PLACE reviewDone IS SET
+      setReviewDone(computeReviewDone(infra));
+    } catch (err) {
+      console.error("loadInfra error:", err);
+      toast.error("Failed to load infra for review");
+      setInfraObj(null);
+      setInfraText("{}");
+      setReviewDone(false);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
+  useEffect(() => {
+    loadInfra();
+  }, [loadInfra]);
+
+  /* ---------------- SAVE REVIEW ---------------- */
   const handleSaveReview = async () => {
     try {
       const parsed = JSON.parse(infraText);
+
       await saveCorporateInfraReview({
         corporate_id: id,
         reviewed_infra: parsed,
       });
-      setReviewDone(true);
+
       toast.success("Infra review saved");
+
+      // 🔥 CRITICAL: reload from backend
+      await loadInfra();
     } catch (err) {
+      console.error("save review error:", err);
       toast.error("Invalid JSON or save failed");
     }
   };
 
+  /* ---------------- APPROVE ---------------- */
   const handleApprove = async () => {
     try {
       await approvedCorporateRequestsFromDB({ corporate_id: id });
       toast.success("Corporate approved successfully");
       navigate("/admin/corporateRequests");
     } catch (err) {
-      toast.error(
+      const msg =
+        err?.response?.data?.errors?.non_field_errors?.[0] ||
         err?.response?.data?.detail ||
-          "Please save infra review before approving"
-      );
+        "Please review infra before approving";
+      toast.error(msg);
+
+      // optional: re-sync state
+      await loadInfra();
     }
   };
 

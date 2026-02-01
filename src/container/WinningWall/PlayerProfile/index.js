@@ -25,28 +25,11 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { DraftApi, UserProfileApi } from "../../../APIConfig/CtfConfig";
 import truncateString from "../../../utilities/truncateString";
-import {
-  downloadReport,
-  getReportList,
-} from "../../../APIConfig/version2Scenario";
+import { getReportList } from "../../../APIConfig/version2Scenario";
 import ApiVersion2 from "../../../APIConfig/version2Api";
 import ErrorHandler from "../../../ErrorHandler";
 
-export const generateReportPDF = async (actScenId, userId) => {
-  try {
-    const data = await downloadReport(actScenId, userId);
-    if (data) {
-      const downloadLink = document.createElement("a");
-      downloadLink.href = `${process.env.REACT_APP_API_PATH}/${ApiVersion2?.scenario?.newDownloadReport}${actScenId}/${userId}/`;
-      downloadLink.download = "report.pdf";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    }
-  } catch (error) {
-    ErrorHandler(error);
-  }
-};
+
 
 const PlayerProfile = () => {
   const user_Id = useParams()
@@ -807,7 +790,7 @@ const PlayerProfile = () => {
                             <SaveAltIcon
                               sx={{ fontSize: "24px", cursor: "pointer" }}
                               onClick={() =>
-                                navigate(`/report/${ele?.id}/${user?.user_id}`)
+                                 navigate(`/report/${ele?.active_scenario_id}`)
                               }
                             />
                           </Typography>
