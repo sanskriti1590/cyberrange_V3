@@ -41,6 +41,17 @@ const ApiVersion2 = {
     corporateDetail: "/admin/corporate/scenario/detail/",
 
   },
+    // SUPER ADMIN
+  // ===============================
+  superadmin: {
+    activeList: "/superadmin/scenario/active/",
+    overview: (id) => `/superadmin/scenario/active/${id}/overview/`,
+    leaderboard: (id) => `/superadmin/scenario/active/${id}/leaderboard/`,
+    manualScore: "/superadmin/scenario/manual-score/",
+    toggleFlagLock: "/superadmin/scenario/flag/toggle-lock/",
+    toggleMilestoneLock: "/superadmin/scenario/milestone/toggle-lock/",
+    togglePhaseLock: "/superadmin/scenario/phase/toggle-lock/",
+  },
 };
 
 export default ApiVersion2;

@@ -67,3 +67,16 @@ export const createScenarioInfra = (scenarioId, payload) =>
     payload,
     { headers: withAuth() }
   );
+
+
+export const createScenarioWalkthrough = (formData) =>
+  api.post(
+    "/corporate/scenario/walkthrough/create/",
+    formData,
+    {
+      headers: {
+        ...withAuth(),
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );

@@ -18,11 +18,12 @@ import formatDate from "../../utilities/formatDate";
 import CustomModal from "../ui/CustomModal";
 import Button from "@mui/material/Button";
 import trash from "../../assests/icons/trash.svg";
-import { useDispatch } from "react-redux";
-import { deleteUser } from "../../RTK/admin/users/allUsersSlice";
-import { UserDelete } from "../../APIConfig/adminConfig";
 import truncateString from "../../utilities/truncateString";
 import { CSSTransition } from "react-transition-group";
+import { deleteUser } from "../../APIConfig/adminConfig";   
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+
 
 const WinningWall = (props) => {
 	// Destructure props and initialize state and navigate hook
@@ -30,11 +31,15 @@ const WinningWall = (props) => {
 
 	const navigate = useNavigate();
 
-	const dispatch = useDispatch();
 
 	const [modalOpen, setModalOpen] = useState(false);
 
-	const [userID, setUserID] = useState(null);
+	const [userId, setUserID] = useState(null);
+	const [toast, setToast] = useState({
+  open: false,
+  message: "",
+  severity: "success",
+});
 
 	const MAX_CHAR_LENGTH = 30;
 
@@ -72,17 +77,35 @@ const WinningWall = (props) => {
 		setUserID(userId);
 		setModalOpen(true);
 	};
-	const deleteUserHandler = async () => {
-		try {
-			const response = await UserDelete(userID);
-			if (response.status === 202) {
-				dispatch(deleteUser(userID));
-				handleCloseModal();
-			}
-		} catch (error) {
-			//console.log(error);
-		}
-	};
+
+
+
+const deleteUserHandler = async () => {
+  try {
+    const res = await deleteUser(userId);
+
+    if (res.status === 202) {
+      setToast({
+        open: true,
+        message: "User deleted successfully",
+        severity: "success",
+      });
+
+      handleCloseModal();
+    }
+  } catch (err) {
+    console.error(err);
+
+    setToast({
+      open: true,
+      message:
+        err?.response?.data?.errors ||
+        err?.response?.data?.message ||
+        "Failed to delete user",
+      severity: "error",
+    });
+  }
+};
 	const handleCloseModal = () => {
 		setModalOpen(false);
 	};
@@ -544,20 +567,15 @@ const WinningWall = (props) => {
 											navigate(`/admin/updateUser/${row.user_id}`)
 										}
 									/>
-									{row.privilege_access === "Admin" ? (
-										<Icons.delete
-											style={{
-												fontSize: "24px",
-												color: "#FF3932",
-												cursor: "not-allowed",
-												display: 'none'
-											}}
-										/>
-									) : (
-										<Icons.delete
-											style={{ fontSize: "24px", color: "#FF3932", display: 'none' }}
-											onClick={() => openDeleteUserHandler(row.user_id)}
-										/>
+									{row.privilege_access !== "Admin" && (
+									<Icons.delete
+										style={{
+										fontSize: "24px",
+										color: "#FF3932",
+										cursor: "pointer",
+										}}
+										onClick={() => openDeleteUserHandler(row.user_id)}
+									/>
 									)}
 								</Stack>
 							</TableCell>
@@ -683,22 +701,39 @@ const WinningWall = (props) => {
 		));
 	};
 
-	return (
-		<Stack pb={3} sx={styles.container}>
-			{header && (
-				<Typography variant="h2" m={3}>
-					{header}{" "}
-				</Typography>
-			)}
+return (
+  <>
+    <Stack pb={3} sx={styles.container}>
+      {header && (
+        <Typography variant="h2" m={3}>
+          {header}
+        </Typography>
+      )}
 
-			<TableContainer sx={styles.tableContainer}>
-				<Table stickyHeader sx={styles.table}>
-					<TableHead>{renderTableHeader()}</TableHead>
-					<TableBody>{renderTableBody()}</TableBody>
-				</Table>
-			</TableContainer>
-		</Stack>
-	);
-};
+      <TableContainer sx={styles.tableContainer}>
+        <Table stickyHeader sx={styles.table}>
+          <TableHead>{renderTableHeader()}</TableHead>
+          <TableBody>{renderTableBody()}</TableBody>
+        </Table>
+      </TableContainer>
+    </Stack>
 
+    <Snackbar
+      open={toast.open}
+      autoHideDuration={3000}
+      onClose={() => setToast((p) => ({ ...p, open: false }))}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+    >
+      <Alert
+        onClose={() => setToast((p) => ({ ...p, open: false }))}
+        severity={toast.severity}
+        variant="filled"
+        sx={{ width: "100%" }}
+      >
+        {toast.message}
+      </Alert>
+    </Snackbar>
+  </>
+);
+}
 export default WinningWall;

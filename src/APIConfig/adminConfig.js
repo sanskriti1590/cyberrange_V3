@@ -261,16 +261,7 @@ export const ctfUpdatePost = async (
 	);
 };
 
-// delete the user
-export const UserDelete = async (userId) => {
-	const token = localStorage.getItem("access_token");
-	return await API.delete(`${ApiConfig.admin.deleteUser}${userId}/`, {
-		headers: {
-			"Content-Type": "multipart/form-data",
-			Authorization: `Bearer ${token}`,
-		},
-	});
-};
+
 
 // news api
 export const getNewsApi = async () => {
@@ -438,6 +429,38 @@ export const addUser = async (formData, selectedAvatar) => {
 			Authorization: `Bearer ${token}`,
 		},
 	});
+};
+
+// Bulk User Upload
+export const bulkUserUpload = async (file) => {
+  const token = localStorage.getItem("access_token");
+
+  const formData = new FormData();
+  formData.append("file", file); // Excel (.xlsx / .xls)
+
+  return await API.post(
+    `${ApiConfig.admin.bulkUserUpload}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const deleteUser = async (userId) => {
+  const token = localStorage.getItem("access_token");
+
+  return await API.delete(
+    `${ApiConfig.admin.deleteUser}${userId}/`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 };
 
 // to get the notification list

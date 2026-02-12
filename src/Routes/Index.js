@@ -18,6 +18,11 @@ import ForgotPassword from "../container/ForgotPassword";
 import MobileView from "../components/MobileView";
 import LoaderImg from "../components/ui/loader";
 
+
+// SuperAdmin Pages
+import ActiveScenarioList from "../container/SuperAdmin/ActiveScenarioList";
+import ActiveScenarioDetails from "../container/SuperAdmin/ActiveScenarioDetails";
+
 // Auth/OTP
 import OtpBox from "../components/OTPBox/otp";
 import Phonenum from "../components/OTPBox/Phonenum";
@@ -459,6 +464,15 @@ const Router = () => {
                 { path: "userAddCorporate/:userId", element: <ScenarioCategory variant="userAddCorporate" /> },
                 { path: "webScenariosCreate", element: <CreateWebScenarios /> },
             ],
+        },
+        {
+        path: "/superadmin",
+        element: <ProtectedDashboard />,
+        children: [
+            { index: true, element: <ActiveScenarioList /> },
+            { path: "scenarios", element: <ActiveScenarioList /> },
+            { path: "scenario/:activeScenarioId", element: <ActiveScenarioDetails /> },
+        ],
         },
 
         // Error pages
