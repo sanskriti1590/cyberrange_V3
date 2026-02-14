@@ -51,6 +51,7 @@ const ApiVersion2 = {
     toggleFlagLock: "/superadmin/scenario/flag/toggle-lock/",
     toggleMilestoneLock: "/superadmin/scenario/milestone/toggle-lock/",
     togglePhaseLock: "/superadmin/scenario/phase/toggle-lock/",
+    consoleMonitor: "/superadmin/scenario/console-monitor/", 
   },
 };
 

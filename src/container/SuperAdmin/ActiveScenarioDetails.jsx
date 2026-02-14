@@ -17,9 +17,12 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 import { getSuperAdminScenarioOverview } from "../../APIConfig/SuperAdminConfig";
 import { endGameV2 } from "../../APIConfig/version2Scenario";
-
 import LeaderboardTab from "./LeaderboardTab";
 import ConfigTab from "./ConfigTab";
+import ConsoleMonitorTab from "./ConsoleMonitorTab";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+
+
 
 export default function ActiveScenarioDetails() {
   const { activeScenarioId } = useParams();
@@ -91,25 +94,47 @@ if (!overview) {
   return (
     <Box sx={{ p: 4, background: "#020617", minHeight: "100vh" }}>
       
-      {/* ================= HEADER ================= */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
+    <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="h5" fontWeight={900} color="#38bdf8">
           {overview?.scenario_name}
         </Typography>
 
-        <Button
-          startIcon={<WarningAmberIcon />}
-          variant="contained"
-          onClick={() => setOpenConfirm(true)}
-          sx={{
-            background: "linear-gradient(90deg,#dc2626,#b91c1c)",
-            fontWeight: 800,
-          }}
-        >
-          End Game
-        </Button>
-      </Stack>
+        <Stack direction="row" spacing={2}>
+          
+          {/*  TEAM CHAT BUTTON */}
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<ChatBubbleOutlineIcon />}
+            onClick={() =>
+              navigate(`/scenario-chat/${activeScenarioId}`)
+            }
+            sx={{
+              border: "3px solid #00FFFF",
+              borderRadius: 4.5,
+              background: "linear-gradient(135deg, #222E37, #22d3ee)",
+              color: "#020617",
+              fontWeight: 600,
+            }}
+          >
+            Team Chat
+          </Button>
 
+          {/* END GAME BUTTON */}
+          <Button
+            startIcon={<WarningAmberIcon />}
+            variant="contained"
+            onClick={() => setOpenConfirm(true)}
+            sx={{
+              background: "linear-gradient(90deg,#dc2626,#b91c1c)",
+              fontWeight: 800,
+            }}
+          >
+            End Game
+          </Button>
+
+        </Stack>
+      </Stack>
       {/* ================= TABS ================= */}
       <Tabs
         value={tab}
@@ -118,6 +143,7 @@ if (!overview) {
       >
         <Tab label="Leaderboard" />
         <Tab label="Scenario Config" />
+        <Tab label="Console Monitor" /> 
       </Tabs>
 
       <Box mt={3}>
@@ -126,6 +152,9 @@ if (!overview) {
         )}
         {tab === 1 && (
           <ConfigTab activeScenarioId={activeScenarioId} />
+        )}
+        {tab === 2 && (
+         <ConsoleMonitorTab activeScenarioId={activeScenarioId} />
         )}
       </Box>
 

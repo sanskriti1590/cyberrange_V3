@@ -107,3 +107,19 @@ export const toggleSuperAdminPhaseLock = async (payload) => {
     }
   );
 };
+
+export const getSuperAdminConsoleMonitor = async (payload) => {
+  const token = localStorage.getItem("access_token");
+
+  return await APIVERSION2.post(
+    ApiVersion2.superadmin.consoleMonitor,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+

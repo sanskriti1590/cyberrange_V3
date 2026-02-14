@@ -239,6 +239,170 @@ const CISOModerationPanel = ({ data, refresh }) => {
   );
 };
 
+const FlagModerationPanel = ({ data }) => {
+  const phases = Object.values(data?.itemsByPhase || {});
+
+  if (!phases.length) {
+    return (
+      <Stack sx={{ p: 3 }}>
+        <Typography color="#94a3b8" fontSize={13}>
+          No flags available for this participant.
+        </Typography>
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack spacing={3} sx={{ p: 2 }}>
+      {/* HEADER */}
+      <Stack spacing={0.5}>
+        <Typography fontSize={15} fontWeight={900}>
+          CISO Review Panel (Flags)
+        </Typography>
+        <Typography fontSize={12} color="#94a3b8">
+          Participant: {data?.participant_id}
+        </Typography>
+      </Stack>
+
+      {phases.map((phase) => (
+        <Box key={phase.phase_id}>
+          {/* PHASE HEADER */}
+          <Typography
+            sx={{
+              fontSize: 13,
+              fontWeight: 900,
+              color: "#38bdf8",
+              mb: 1,
+            }}
+          >
+            {phase.phase_name}
+          </Typography>
+
+          {phase.items.map((f) => {
+            const status = f.is_approved
+              ? "APPROVED"
+              : f.is_submitted
+              ? "SUBMITTED"
+              : "PENDING";
+
+            return (
+              <Box
+                key={f.flag_id}
+                sx={{
+                  mb: 1.5,
+                  p: 1.5,
+                  borderRadius: 2,
+                  background:
+                    "linear-gradient(135deg, #020617, #0f172a)",
+                  border: "1px solid rgba(148,163,184,0.25)",
+                }}
+              >
+                {/* TITLE */}
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography fontWeight={800}>
+                    {f.flag_name}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    label={`${f.flag_score} pts`}
+                  />
+                </Stack>
+
+                {/* STATUS */}
+                <Stack direction="row" spacing={1} mt={0.5}>
+                  {status === "APPROVED" && (
+                    <Chip
+                      icon={<CheckCircleIcon />}
+                      label="Approved"
+                      color="success"
+                      size="small"
+                    />
+                  )}
+                  {status === "SUBMITTED" && (
+                    <Chip
+                      icon={<TaskAltIcon />}
+                      label="Submitted"
+                     sx={{
+                      backgroundColor: "rgba(56, 189, 248, 0.15)",
+                      color: "#38bdf8",
+                      border: "1px solid rgba(56, 189, 248, 0.4)",
+                    }}
+                      size="small"
+                    />
+                  )}
+                  {status === "PENDING" && (
+                    <Chip
+                      icon={<CancelIcon />}
+                      label="Not Submitted"
+                      size="small"
+                    />
+                  )}
+                </Stack>
+
+                {/* CORRECT / INCORRECT */}
+                {f.is_submitted && (
+                  <Typography
+                    sx={{
+                      mt: 0.5,
+                      fontSize: 12,
+                      color: f.is_correct
+                        ? "#22c55e"
+                        : "#ef4444",
+                    }}
+                  >
+                    {f.is_correct
+                      ? "Correct Submission"
+                      : "Incorrect Submission"}
+                  </Typography>
+                )}
+
+                {/* SCORE */}
+                {f.is_submitted && (
+                  <Typography
+                    sx={{
+                      mt: 0.5,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: f.obtained_score > 0 ? "#22c55e" : "#ef4444",
+                    }}
+                  >
+                    {f.is_approved ? "Final Score" : "Obtained Score"}:{" "}
+                    {f.obtained_score > 0 ? `+${f.obtained_score}` : f.obtained_score} pts
+                  </Typography>
+                )}
+
+                {/* ATTEMPTS */}
+                {typeof f.attempt_count !== "undefined" && (
+                  <Typography
+                    sx={{
+                      mt: 0.5,
+                      fontSize: 12,
+                      color: "#94a3b8",
+                    }}
+                  >
+                    Attempts: {f.attempt_count}
+                  </Typography>
+                )}
+
+                {/* META */}
+                <Typography
+                  sx={{
+                    mt: 1,
+                    fontSize: 11,
+                    color: "#94a3b8",
+                  }}
+                >
+                  Submitted: {fmt(f.submitted_at)} <br />
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+      ))}
+    </Stack>
+  );
+};
+
 /* ===================== MAIN ===================== */
 
 const IndividualPlayer = ({ data, reload, setReload, load, gameType }) => {
@@ -267,17 +431,23 @@ const IndividualPlayer = ({ data, reload, setReload, load, gameType }) => {
             borderRight: "1px solid rgba(148,163,184,0.15)",
           }}
         >
-          {full && (
-            <CISOModerationPanel
-              data={data}
-              refresh={refresh}
-            />
-          )}
+        {full && gameType === "MILESTONE" && (
+          <CISOModerationPanel
+            data={data}
+            refresh={refresh}
+          />
+        )}
+
+        {full && gameType === "FLAG" && (
+          <FlagModerationPanel
+            data={data}
+          />
+        )}
         </Stack>
 
         {/* TOGGLE */}
         <Tooltip title="Toggle Details">
-          {gameType === "MILESTONE" && (
+          {gameType && (
             <Icons.doubleRightArrow
               style={{
                 fontSize: "36px",

@@ -134,6 +134,43 @@ const clickableRow = {
   },
 };
 
+const normalizeBreakdown = (items, scenarioType) => {
+  return (items || []).map((it) => {
+    if (scenarioType === "FLAG") {
+      return {
+        type: "FLAG",
+        item_id: it.flag_id,
+        name: it.flag_name,
+        description: "",
+        score: it.obtained_score || 0,
+        penalty: 0,
+        bonus_delta: 0,
+        retries: it.retries || it.retires || 0,
+        hint_used: it.hint_used || false,
+        submitted_at: it.submitted_at,
+        approved_at: it.approved_at,
+        evidence: [],
+      };
+    }
+
+    // MILESTONE
+    return {
+      type: "MILESTONE",
+      item_id: it.milestone_id,
+      name: it.milestone_name,
+      description: it.milestone_description || "",
+      score: it.obtained_score || 0,
+      penalty: 0,
+      bonus_delta: 0,
+      retries: 0,
+      hint_used: it.hint_used || false,
+      submitted_at: it.submitted_at,
+      approved_at: it.approved_at,
+      evidence: it.evidence_files || [],
+    };
+  });
+};
+
 /* =========================
    Heatmap component (Teams/Roles vs Phases)
 ========================= */
@@ -454,18 +491,32 @@ const teamColorByName = (name) => {
      Drawer: Player details
   ========================= */
 
-  const selectedBreakdownByPhase = useMemo(() => {
-    if (!selected?.breakdown) return [];
-    const map = new Map();
-    for (const it of selected.breakdown) {
-      const pid = it.phase_id || it.phase || "PHASE";
-      const pname = it.phase_name || it.phase || pid;
-      const cur = map.get(pid) || { phase_id: pid, phase_name: pname, items: [] };
-      cur.items.push(it);
-      map.set(pid, cur);
+const selectedBreakdownByPhase = useMemo(() => {
+  if (!selected?.breakdown || !Array.isArray(selected.breakdown)) {
+    return [];
+  }
+
+  const grouped = {};
+
+  selected.breakdown.forEach((item) => {
+    const phaseId = item.phase_id || "NO_PHASE";
+
+    // get phase name from global phase list
+    const phaseObj = data?.phases?.find(p => p.phase_id === phaseId);
+
+    if (!grouped[phaseId]) {
+      grouped[phaseId] = {
+        phase_id: phaseId,
+        phase_name: phaseObj?.phase_name || phaseId,
+        items: [],
+      };
     }
-    return [...map.values()];
-  }, [selected]);
+
+    grouped[phaseId].items.push(item);
+  });
+
+  return Object.values(grouped);
+}, [selected, data]);
 
   /* =========================
      Render
@@ -1099,7 +1150,7 @@ const teamColorByName = (name) => {
                   />
                   <Chip
                     size="small"
-                    label={selected?.team || "NO_TEAM"}
+                    label={selected?.team_group || "NO_TEAM"}
                     sx={{
                       height: 22,
                       fontSize: 11,
@@ -1189,7 +1240,7 @@ const teamColorByName = (name) => {
                                     }}
                                   />
                                   <Typography sx={{ ...bright, fontWeight: 900 }}>
-                                    {it.name || "Unnamed Item"}
+                                    {it.name || it.flag_name || it.milestone_name || "Unnamed Item"}
                                   </Typography>
                                 </Stack>
 
@@ -1250,14 +1301,34 @@ const teamColorByName = (name) => {
                                 </Typography>
                               </Grid>
 
-                              <Grid item xs={6}>
-                                <Typography sx={{ ...muted, fontSize: 11 }}>
-                                  Approved At
-                                </Typography>
-                                <Typography sx={{ ...bright, fontWeight: 900 }}>
-                                  {it.approved_at ? fmtTS(it.approved_at) : "—"}
-                                </Typography>
-                              </Grid>
+                              {it.submitted_response || it.submitted_text ? (
+                                <Box sx={{ mt: 1 }}>
+                                  <Typography sx={{ ...muted, fontSize: 11 }}>
+                                    Submission
+                                  </Typography>
+                                  <Typography
+                                    sx={{
+                                      color: "#38bdf8",
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      whiteSpace: "pre-wrap",
+                                      wordBreak: "break-word",
+                                    }}
+                                  >
+                                    {it.submitted_response || it.submitted_text}
+                                  </Typography>
+                                </Box>
+                              ) : null}
+                              {data?.scenario_type === "MILESTONE" && (
+                                <Grid item xs={6}>
+                                  <Typography sx={{ ...muted, fontSize: 11 }}>
+                                    Approved At
+                                  </Typography>
+                                  <Typography sx={{ ...bright, fontWeight: 900 }}>
+                                    {it.approved_at ? fmtTS(it.approved_at) : "—"}
+                                  </Typography>
+                                </Grid>
+                              )}
                             </Grid>
 
                             {/* Evidence */}

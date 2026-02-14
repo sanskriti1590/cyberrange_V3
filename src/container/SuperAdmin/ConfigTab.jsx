@@ -135,29 +135,61 @@ export default function ConfigTab({ activeScenarioId }) {
     if (!item) return;
 
     try {
-      const payload = {
+        const payload = {
         active_scenario_id: activeScenarioId,
         locked: nextLocked,
         scope,
         team_group: team_group || undefined,
         participant_id: participant_id || undefined,
-      };
+        };
 
-      if (item.type === "FLAG") {
+        if (item.type === "FLAG") {
         payload.flag_id = item.id;
         await toggleSuperAdminFlagLock(payload);
-      } else {
+        } else {
         payload.milestone_id = item.id;
         await toggleSuperAdminMilestoneLock(payload);
-      }
+        }
 
-      showSnack(`${nextLocked ? "Locked" : "Unlocked"} successfully`);
-      setLockModal((p) => ({ ...p, open: false }));
-      fetchData();
+        // ✅ -------- INSTANT VISUAL UPDATE --------
+        setData((prev) => {
+        if (!prev) return prev;
+
+        const newData = { ...prev };
+        const byPhase = { ...newData.config.by_phase };
+
+        const items = byPhase[item.phase_id] || [];
+
+        const updatedItems = items.map((it) => {
+            if (it.id === item.id && it.type === item.type) {
+            return {
+                ...it,
+                locked: nextLocked,
+            };
+            }
+            return it;
+        });
+
+        byPhase[item.phase_id] = updatedItems;
+
+        newData.config = {
+            ...newData.config,
+            by_phase: byPhase,
+        };
+
+        return newData;
+        });
+
+        showSnack(`${nextLocked ? "Locked" : "Unlocked"} successfully`);
+        setLockModal((p) => ({ ...p, open: false }));
+
+        // 🔁 still refresh in background for correctness
+        fetchData();
+
     } catch (e) {
-      showSnack("Lock/unlock failed");
+        showSnack("Lock/unlock failed");
     }
-  };
+    };
 
   const participantNameMap = useMemo(() => {
   const map = {};
@@ -238,9 +270,9 @@ export default function ConfigTab({ activeScenarioId }) {
                     </TableCell>
 
                     <TableCell sx={{ color: "#94a3b8" }}>
-                    {a.timestamp
-                        ? new Date(a.timestamp).toLocaleTimeString()
-                        : "—"}
+                    {a.timestamp_ms
+                    ? new Date(a.timestamp_ms).toLocaleTimeString()
+                    : "—"}
                     </TableCell>
                 </TableRow>
                 ))
@@ -339,77 +371,240 @@ export default function ConfigTab({ activeScenarioId }) {
       </Card>
 
       {/* ================= SCORE MODAL ================= */}
-      <Dialog open={openAdjust} onClose={() => setOpenAdjust(false)}>
-        <DialogTitle>Add Score Adjustment</DialogTitle>
-        <DialogContent sx={{ minWidth: 420 }}>
-          <Stack spacing={2} mt={1}>
+      <Dialog
+        open={openAdjust}
+        onClose={() => setOpenAdjust(false)}
+        PaperProps={{
+          sx: {
+            background: "#0f172a",
+            color: "#e5e7eb",
+            borderRadius: 3,
+            border: "1px solid rgba(56,189,248,0.3)",
+            boxShadow: "0 0 40px rgba(0,0,0,0.6)",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: 20,
+            fontWeight: 900,
+            color: "#38bdf8",
+            borderBottom: "1px solid rgba(148,163,184,0.15)",
+            pb: 2,
+          }}
+        >
+          ⚖ Manual Score Adjustment
+        </DialogTitle>
+
+        <DialogContent sx={{ minWidth: 500, mt: 2 }}>
+          <Stack spacing={3} mt={1}>
+
+            {/* PARTICIPANT */}
             <FormControl fullWidth>
-              <InputLabel>Participant</InputLabel>
+              <InputLabel sx={{ color: "#94a3b8" }}>
+                Participant
+              </InputLabel>
               <Select
                 value={participant}
                 onChange={(e) => setParticipant(e.target.value)}
                 label="Participant"
+                sx={{
+                  backgroundColor: "#020617",
+                  color: "#e5e7eb",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(148,163,184,0.3)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#38bdf8",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#38bdf8",
+                  },
+                }}
               >
                 {participants.map((p) => (
-                  <MenuItem key={p.participant_id} value={p.participant_id}>
+                  <MenuItem
+                    key={p.participant_id}
+                    value={p.participant_id}
+                  >
                     {p.name} ({p.team_group})
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
 
+            {/* TYPE */}
             <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select value={type} onChange={(e) => setType(e.target.value)} label="Type">
+              <InputLabel sx={{ color: "#94a3b8" }}>
+                Type
+              </InputLabel>
+              <Select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                label="Type"
+                sx={{
+                  backgroundColor: "#020617",
+                  color: "#e5e7eb",
+                }}
+              >
                 <MenuItem value="BONUS">Bonus (+)</MenuItem>
                 <MenuItem value="PENALTY">Penalty (-)</MenuItem>
               </Select>
             </FormControl>
 
+            {/* POINTS */}
             <TextField
               label="Points"
               type="number"
               value={points}
               onChange={(e) => setPoints(e.target.value)}
               fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "#020617",
+                  color: "#e5e7eb",
+                  "& fieldset": {
+                    borderColor: "rgba(148,163,184,0.3)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#38bdf8",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#38bdf8",
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "#94a3b8",
+                },
+              }}
             />
 
+            {/* AUDIT NOTE */}
             <TextField
               label="Audit Note"
               multiline
-              rows={3}
+              rows={4}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "#020617",
+                  color: "#e5e7eb",
+                  "& fieldset": {
+                    borderColor: "rgba(148,163,184,0.3)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#38bdf8",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#38bdf8",
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "#94a3b8",
+                },
+              }}
             />
           </Stack>
         </DialogContent>
 
-        <DialogActions>
-          <Button onClick={() => setOpenAdjust(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleManualScore} sx={{ background: "#14b8a6" }}>
+        <DialogActions
+          sx={{
+            borderTop: "1px solid rgba(148,163,184,0.15)",
+            px: 3,
+            py: 2,
+          }}
+        >
+          <Button
+            onClick={() => setOpenAdjust(false)}
+            sx={{
+              color: "#94a3b8",
+              fontWeight: 700,
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handleManualScore}
+            sx={{
+              background: "linear-gradient(90deg,#22d3ee,#06b6d4)",
+              color: "#000",
+              fontWeight: 800,
+              "&:hover": {
+                background: "#0891b2",
+              },
+            }}
+          >
             Apply
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* ================= LOCK MODAL (Scope) ================= */}
-      <Dialog open={lockModal.open} onClose={() => setLockModal((p) => ({ ...p, open: false }))}>
-        <DialogTitle>
-          {lockModal.nextLocked ? "Lock Item" : "Unlock Item"}
+      <Dialog
+        open={lockModal.open}
+        onClose={() => setLockModal((p) => ({ ...p, open: false }))}
+        PaperProps={{
+          sx: {
+            background: "#0f172a",
+            color: "#e5e7eb",
+            borderRadius: 3,
+            border: "1px solid rgba(56,189,248,0.3)",
+            boxShadow: "0 0 40px rgba(0,0,0,0.6)",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: 20,
+            fontWeight: 900,
+            color: "#38bdf8",
+            borderBottom: "1px solid rgba(148,163,184,0.15)",
+            pb: 2,
+          }}
+        >
+          {lockModal.nextLocked ? "🔒 Lock Item" : "🔓 Unlock Item"}
         </DialogTitle>
-        <DialogContent sx={{ minWidth: 420 }}>
-          <Stack spacing={2} mt={1}>
-            <Typography sx={{ color: "#94a3b8" }}>
+
+        <DialogContent sx={{ minWidth: 480, mt: 2 }}>
+          <Stack spacing={3} mt={1}>
+            
+            {/* ITEM NAME */}
+            <Typography
+              sx={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: "#e5e7eb",
+              }}
+            >
               {lockModal.item?.name}
             </Typography>
 
+            {/* SCOPE SELECT */}
             <FormControl fullWidth>
-              <InputLabel>Scope</InputLabel>
+              <InputLabel sx={{ color: "#94a3b8" }}>Scope</InputLabel>
               <Select
                 value={lockModal.scope}
                 label="Scope"
-                onChange={(e) => setLockModal((p) => ({ ...p, scope: e.target.value }))}
+                onChange={(e) =>
+                  setLockModal((p) => ({ ...p, scope: e.target.value }))
+                }
+                sx={{
+                  backgroundColor: "#020617",
+                  color: "#e5e7eb",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(148,163,184,0.3)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#38bdf8",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#38bdf8",
+                  },
+                }}
               >
                 <MenuItem value="ALL">All Teams</MenuItem>
                 <MenuItem value="TEAM">Specific Team</MenuItem>
@@ -417,31 +612,60 @@ export default function ConfigTab({ activeScenarioId }) {
               </Select>
             </FormControl>
 
+            {/* TEAM SELECT */}
             {lockModal.scope === "TEAM" && (
               <FormControl fullWidth>
-                <InputLabel>Team Group</InputLabel>
+                <InputLabel sx={{ color: "#94a3b8" }}>
+                  Team Group
+                </InputLabel>
                 <Select
                   value={lockModal.team_group}
                   label="Team Group"
-                  onChange={(e) => setLockModal((p) => ({ ...p, team_group: e.target.value }))}
+                  onChange={(e) =>
+                    setLockModal((p) => ({
+                      ...p,
+                      team_group: e.target.value,
+                    }))
+                  }
+                  sx={{
+                    backgroundColor: "#020617",
+                    color: "#e5e7eb",
+                  }}
                 >
                   {teamGroups.map((tg) => (
-                    <MenuItem key={tg} value={tg}>{tg}</MenuItem>
+                    <MenuItem key={tg} value={tg}>
+                      {tg}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             )}
 
+            {/* PARTICIPANT SELECT */}
             {lockModal.scope === "PARTICIPANT" && (
               <FormControl fullWidth>
-                <InputLabel>Participant</InputLabel>
+                <InputLabel sx={{ color: "#94a3b8" }}>
+                  Participant
+                </InputLabel>
                 <Select
                   value={lockModal.participant_id}
                   label="Participant"
-                  onChange={(e) => setLockModal((p) => ({ ...p, participant_id: e.target.value }))}
+                  onChange={(e) =>
+                    setLockModal((p) => ({
+                      ...p,
+                      participant_id: e.target.value,
+                    }))
+                  }
+                  sx={{
+                    backgroundColor: "#020617",
+                    color: "#e5e7eb",
+                  }}
                 >
                   {participants.map((p) => (
-                    <MenuItem key={p.participant_id} value={p.participant_id}>
+                    <MenuItem
+                      key={p.participant_id}
+                      value={p.participant_id}
+                    >
                       {p.name} ({p.team_group})
                     </MenuItem>
                   ))}
@@ -451,9 +675,37 @@ export default function ConfigTab({ activeScenarioId }) {
           </Stack>
         </DialogContent>
 
-        <DialogActions>
-          <Button onClick={() => setLockModal((p) => ({ ...p, open: false }))}>Cancel</Button>
-          <Button variant="contained" onClick={applyLock} sx={{ background: "#14b8a6" }}>
+        <DialogActions
+          sx={{
+            borderTop: "1px solid rgba(148,163,184,0.15)",
+            px: 3,
+            py: 2,
+          }}
+        >
+          <Button
+            onClick={() =>
+              setLockModal((p) => ({ ...p, open: false }))
+            }
+            sx={{
+              color: "#94a3b8",
+              fontWeight: 700,
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={applyLock}
+            sx={{
+              background: "linear-gradient(90deg,#22d3ee,#06b6d4)",
+              color: "#000",
+              fontWeight: 800,
+              "&:hover": {
+                background: "#0891b2",
+              },
+            }}
+          >
             Confirm
           </Button>
         </DialogActions>
